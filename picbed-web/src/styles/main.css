@@ -1,0 +1,51 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f5f7fa;
+  color: #303133;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.gallery-page {
+  padding: 0 10px;
+}
+
+.gallery-page h2 {
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+
+.upload-page,
+.management-page,
+.setup-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.upload-page h2,
+.management-page h2,
+.setup-page h2 {
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+.management-section {
+  margin-bottom: 40px;
+}
+
+.management-section h3 {
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: #606266;
+}

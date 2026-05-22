@@ -1,0 +1,19 @@
+# Data directory (security.txt, H2 database, etc.)
+data/
+
+# Server
+picbed-server/target/
+picbed-server/*.log
+
+# Web
+picbed-web/dist/
+picbed-web/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
