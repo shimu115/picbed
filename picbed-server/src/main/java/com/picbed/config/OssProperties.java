@@ -9,6 +9,7 @@ public class OssProperties {
     private String accessKeyId;
     private String accessKeySecret;
     private String bucketName;
+    private String customDomain;
 
     public String getEndpoint() { return endpoint; }
     public void setEndpoint(String endpoint) { this.endpoint = endpoint; }
@@ -21,4 +22,7 @@ public class OssProperties {
 
     public String getBucketName() { return bucketName; }
     public void setBucketName(String bucketName) { this.bucketName = bucketName; }
+
+    public String getCustomDomain() { return customDomain; }
+    public void setCustomDomain(String customDomain) { this.customDomain = customDomain; }
 }

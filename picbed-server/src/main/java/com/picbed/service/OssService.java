@@ -40,7 +40,9 @@ public class OssService {
         req.setContentType(contentType);
 
         URL signedUrl = ossClient.generatePresignedUrl(req);
-        String accessUrl = OssUtil.getPublicUrl(ossProperties.getBucketName(), ossProperties.getEndpoint(), ossKey);
+        String accessUrl = OssUtil.getPublicUrl(
+                ossProperties.getBucketName(), ossProperties.getEndpoint(),
+                ossProperties.getCustomDomain(), ossKey);
 
         Map<String, Object> result = new HashMap<>();
         result.put("ossKey", ossKey);

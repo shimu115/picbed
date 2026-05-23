@@ -54,7 +54,11 @@ public final class OssUtil {
         return datePrefix + "/" + uuid + "-" + safeName;
     }
 
-    public static String getPublicUrl(String bucketName, String endpoint, String ossKey) {
+    public static String getPublicUrl(String bucketName, String endpoint, String customDomain, String ossKey) {
+        if (customDomain != null && !customDomain.isBlank()) {
+            String domain = customDomain.replaceAll("/+$", "");
+            return "https://" + domain + "/" + ossKey;
+        }
         return "https://" + bucketName + "." + endpoint + "/" + ossKey;
     }
 
