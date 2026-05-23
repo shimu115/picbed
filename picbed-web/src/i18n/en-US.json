@@ -2,6 +2,7 @@
   "common": {
     "appName": "PicBed",
     "copy": "Copy",
+    "copied": "Copied",
     "copySuccess": "Copied to clipboard",
     "cancel": "Cancel",
     "save": "Save",

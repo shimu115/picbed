@@ -56,7 +56,7 @@ public final class OssUtil {
 
     public static String getPublicUrl(String bucketName, String endpoint, String customDomain, String ossKey) {
         if (customDomain != null && !customDomain.isBlank()) {
-            String domain = customDomain.replaceAll("/+$", "");
+            String domain = customDomain.replaceFirst("^https?://", "").replaceAll("/+$", "");
             return "https://" + domain + "/" + ossKey;
         }
         return "https://" + bucketName + "." + endpoint + "/" + ossKey;

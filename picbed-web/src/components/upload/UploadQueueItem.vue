@@ -1,10 +1,29 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 
 defineProps({
   item: { type: Object, required: true }
 })
 const { t } = useI18n()
+
+function copyUrl(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      ElMessage.success(t('common.copied'))
+    })
+  } else {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.left = '-9999px'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    ElMessage.success(t('common.copied'))
+  }
+}
 </script>
 
 <template>
@@ -35,7 +54,7 @@ const { t } = useI18n()
     <div v-if="item.status === 'success' && item.accessUrl" class="item-url">
       <el-input :model-value="item.accessUrl" readonly size="small">
         <template #append>
-          <el-button size="small" @click="navigator.clipboard.writeText(item.accessUrl)">{{ t('common.copy') }}</el-button>
+          <el-button size="small" @click="copyUrl(item.accessUrl)">{{ t('common.copy') }}</el-button>
         </template>
       </el-input>
     </div>
