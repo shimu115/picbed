@@ -1,11 +1,14 @@
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 
 const props = defineProps({
   image: { type: Object, required: true }
 })
 
 defineEmits(['preview', 'delete'])
+const { t } = useI18n()
 
 const imgLoaded = ref(false)
 
@@ -18,14 +21,19 @@ function fileSizeLabel(bytes) {
 
 function copyUrl() {
   navigator.clipboard.writeText(props.image.ossUrl).catch(() => {})
+  ElMessage.success(t('common.copySuccess'))
 }
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('zh-CN', {
+  return new Date(dateStr).toLocaleDateString(locale(), {
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit'
   })
+}
+
+function locale() {
+  return navigator.language
 }
 </script>
 
@@ -36,7 +44,6 @@ function formatDate(dateStr) {
       <img
         :src="image.ossUrl"
         :alt="image.filename"
-        :loading="imgLoaded ? undefined : 'lazy'"
         @load="imgLoaded = true"
         @error="imgLoaded = true"
         :class="{ loaded: imgLoaded }"
@@ -47,8 +54,8 @@ function formatDate(dateStr) {
       <span class="file-size">{{ fileSizeLabel(image.fileSize) }}</span>
     </div>
     <div class="card-actions">
-      <el-button size="small" text @click="copyUrl">Copy URL</el-button>
-      <el-button size="small" text type="danger" @click="$emit('delete', image)">Delete</el-button>
+      <el-button size="small" text @click="copyUrl">{{ t('gallery.copyUrl') }}</el-button>
+      <el-button size="small" text type="danger" @click="$emit('delete', image)">{{ t('gallery.delete') }}</el-button>
     </div>
     <div class="card-date">{{ formatDate(image.createdAt) }}</div>
   </div>

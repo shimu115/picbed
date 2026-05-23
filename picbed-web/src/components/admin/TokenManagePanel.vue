@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { listTokens, createToken, revokeToken } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+const { t } = useI18n()
 const tokens = ref([])
 const loading = ref(false)
 const newTokenName = ref('')
@@ -26,26 +28,26 @@ async function handleCreate() {
     newTokenName.value = ''
     await loadTokens()
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || 'Failed to create token')
+    ElMessage.error(e.response?.data?.message || t('token.createFailed'))
   }
 }
 
 async function handleRevoke(token) {
   try {
-    await ElMessageBox.confirm(`Revoke token "${token.name}"? This cannot be undone.`, 'Warning', {
-      type: 'warning',
-      confirmButtonText: 'Revoke',
-      cancelButtonText: 'Cancel'
-    })
+    await ElMessageBox.confirm(
+      t('token.revokeConfirm', { name: token.name }),
+      t('common.confirm'),
+      { type: 'warning', confirmButtonText: t('token.revoke'), cancelButtonText: t('common.cancel') }
+    )
     await revokeToken(token.id)
-    ElMessage.success('Token revoked')
+    ElMessage.success(t('token.revokeSuccess'))
     await loadTokens()
   } catch { /* cancelled */ }
 }
 
 function copyGeneratedToken() {
   navigator.clipboard.writeText(generatedToken.value)
-  ElMessage.success('Token copied to clipboard')
+  ElMessage.success(t('common.copySuccess'))
 }
 
 onMounted(loadTokens)
@@ -56,41 +58,41 @@ onMounted(loadTokens)
     <div class="create-token">
       <el-input
         v-model="newTokenName"
-        placeholder="Token name (e.g. My Laptop)"
+        :placeholder="t('token.namePlaceholder')"
         class="name-input"
         @keyup.enter="handleCreate"
       />
       <el-button type="primary" @click="handleCreate" :disabled="!newTokenName.trim()">
-        Generate Token
+        {{ t('token.generate') }}
       </el-button>
     </div>
 
     <div v-if="generatedToken" class="generated-token-box">
-      <p class="warning-text">Copy this token now - it won't be shown again!</p>
+      <p class="warning-text">{{ t('token.generatedWarning') }}</p>
       <el-input :model-value="generatedToken" readonly>
         <template #append>
-          <el-button @click="copyGeneratedToken">Copy</el-button>
+          <el-button @click="copyGeneratedToken">{{ t('common.copy') }}</el-button>
         </template>
       </el-input>
     </div>
 
     <el-table :data="tokens" v-loading="loading" style="margin-top: 16px">
-      <el-table-column prop="id" label="ID" width="70" />
-      <el-table-column prop="name" label="Name" />
-      <el-table-column label="Active" width="80">
+      <el-table-column prop="id" :label="t('token.id')" width="70" />
+      <el-table-column prop="name" :label="t('token.name')" />
+      <el-table-column :label="t('token.active')" width="80">
         <template #default="{ row }">
           <el-tag :type="row.isActive ? 'success' : 'danger'" size="small">
-            {{ row.isActive ? 'Yes' : 'No' }}
+            {{ row.isActive ? t('common.yes') : t('common.no') }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Created" width="170">
+      <el-table-column :label="t('token.created')" width="170">
         <template #default="{ row }">{{ row.createdAt?.replace('T', ' ')?.substring(0, 19) }}</template>
       </el-table-column>
-      <el-table-column label="Actions" width="100">
+      <el-table-column :label="t('token.actions')" width="100">
         <template #default="{ row }">
           <el-button v-if="row.isActive" size="small" type="danger" text @click="handleRevoke(row)">
-            Revoke
+            {{ t('token.revoke') }}
           </el-button>
         </template>
       </el-table-column>

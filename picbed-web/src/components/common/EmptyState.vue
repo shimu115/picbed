@@ -1,17 +1,20 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
+
 defineProps({
-  message: { type: String, default: 'No images yet' },
+  message: { type: String, default: '' },
   showUpload: { type: Boolean, default: false }
 })
 defineEmits(['upload'])
+const { t } = useI18n()
 </script>
 
 <template>
   <div class="empty-state">
     <el-icon class="empty-icon"><svg viewBox="0 0 24 24" width="64" height="64" fill="#c0c4cc"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></el-icon>
-    <p class="empty-text">{{ message }}</p>
+    <p class="empty-text">{{ message || t('gallery.empty') }}</p>
     <el-button v-if="showUpload" type="primary" @click="$emit('upload')">
-      Upload Images
+      {{ t('upload.title') }}
     </el-button>
   </div>
 </template>

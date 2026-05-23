@@ -1,15 +1,19 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { useUploadStore } from '@/stores/upload'
 import UploadQueueItem from './UploadQueueItem.vue'
 
+const { t } = useI18n()
 const uploadStore = useUploadStore()
 </script>
 
 <template>
   <div v-if="uploadStore.queue.length > 0" class="upload-queue">
     <div class="queue-header">
-      <h4>Upload Queue ({{ uploadStore.queue.length }})</h4>
-      <el-button size="small" text @click="uploadStore.clearCompleted">Clear completed</el-button>
+      <h4>{{ t('upload.queue') }} ({{ uploadStore.queue.length }})</h4>
+      <el-button size="small" text @click="uploadStore.clearCompleted">
+        {{ t('upload.clearCompleted') }}
+      </el-button>
     </div>
     <UploadQueueItem v-for="item in uploadStore.queue" :key="item.id" :item="item" />
   </div>

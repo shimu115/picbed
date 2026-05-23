@@ -1,19 +1,26 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useTokenStore } from '@/stores/token'
+import { switchLang } from '@/i18n'
 import TokenInput from '@/components/common/TokenInput.vue'
 
 const router = useRouter()
 const tokenStore = useTokenStore()
+const { t, locale } = useI18n()
 
 const navItems = [
-  { path: '/', label: 'Gallery', requiresToken: false },
-  { path: '/upload', label: 'Upload', requiresToken: true },
-  { path: '/manage', label: 'Manage', requiresToken: true }
+  { path: '/', label: 'nav.gallery', requiresToken: false },
+  { path: '/upload', label: 'nav.upload', requiresToken: true },
+  { path: '/manage', label: 'nav.manage', requiresToken: true }
 ]
 
 function goTo(path) {
   router.push(path)
+}
+
+function toggleLang() {
+  switchLang(locale.value === 'zh-CN' ? 'en-US' : 'zh-CN')
 }
 </script>
 
@@ -22,7 +29,7 @@ function goTo(path) {
     <div class="header-left">
       <router-link to="/" class="logo">
         <img src="/favicon.svg" alt="PicBed" class="logo-icon" />
-        <span class="logo-text">PicBed</span>
+        <span class="logo-text">{{ t('common.appName') }}</span>
       </router-link>
       <nav class="nav-links">
         <el-button
@@ -33,11 +40,14 @@ function goTo(path) {
           @click="goTo(item.path)"
           :disabled="item.requiresToken && !tokenStore.hasToken && $route.path !== item.path"
         >
-          {{ item.label }}
+          {{ t(item.label) }}
         </el-button>
       </nav>
     </div>
     <div class="header-right">
+      <el-button size="small" text @click="toggleLang" class="lang-btn">
+        {{ t('lang.switch') }}
+      </el-button>
       <TokenInput />
     </div>
   </el-header>
@@ -80,5 +90,9 @@ function goTo(path) {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+.lang-btn {
+  font-size: 12px;
 }
 </style>

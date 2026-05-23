@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getPublicImages, deleteImage, batchDeleteImages } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+const { t } = useI18n()
 const images = ref([])
 const loading = ref(false)
 const selection = ref([])
@@ -23,19 +25,27 @@ async function loadImages() {
 
 async function handleDelete(img) {
   try {
-    await ElMessageBox.confirm(`Delete "${img.filename}"?`, 'Confirm', { type: 'warning' })
+    await ElMessageBox.confirm(
+      t('manage.deleteConfirm', { name: img.filename }),
+      t('common.confirm'),
+      { type: 'warning' }
+    )
     await deleteImage(img.id)
-    ElMessage.success('Deleted')
+    ElMessage.success(t('manage.deleteSuccess'))
     await loadImages()
   } catch { /* cancelled */ }
 }
 
 async function handleBatchDelete() {
   try {
-    await ElMessageBox.confirm(`Delete ${selection.value.length} selected images?`, 'Confirm Batch Delete', { type: 'warning' })
+    await ElMessageBox.confirm(
+      t('manage.batchDeleteConfirm', { count: selection.value.length }),
+      t('common.confirm'),
+      { type: 'warning' }
+    )
     const ids = selection.value.map(i => i.id)
     await batchDeleteImages(ids)
-    ElMessage.success(`Deleted ${ids.length} images`)
+    ElMessage.success(t('manage.batchDeleteSuccess', { count: ids.length }))
     selection.value = []
     await loadImages()
   } catch { /* cancelled */ }
@@ -48,7 +58,7 @@ function handlePageChange(p) {
 
 function copyUrl(url) {
   navigator.clipboard.writeText(url)
-  ElMessage.success('URL copied')
+  ElMessage.success(t('manage.copyUrlSuccess'))
 }
 
 function fileSizeLabel(bytes) {
@@ -69,7 +79,7 @@ onMounted(loadImages)
         :disabled="selection.length === 0"
         @click="handleBatchDelete"
       >
-        Delete Selected ({{ selection.length }})
+        {{ t('manage.deleteSelected', { count: selection.length }) }}
       </el-button>
     </div>
 
@@ -80,23 +90,23 @@ onMounted(loadImages)
       style="margin-top: 10px"
     >
       <el-table-column type="selection" width="45" />
-      <el-table-column label="Preview" width="80">
+      <el-table-column :label="t('manage.preview')" width="80">
         <template #default="{ row }">
           <img :src="row.ossUrl" class="thumb" />
         </template>
       </el-table-column>
-      <el-table-column prop="filename" label="Filename" min-width="180" show-overflow-tooltip />
-      <el-table-column prop="contentType" label="Type" width="110" />
-      <el-table-column label="Size" width="90">
+      <el-table-column prop="filename" :label="t('manage.filename')" min-width="180" show-overflow-tooltip />
+      <el-table-column prop="contentType" :label="t('manage.type')" width="110" />
+      <el-table-column :label="t('manage.size')" width="90">
         <template #default="{ row }">{{ fileSizeLabel(row.fileSize) }}</template>
       </el-table-column>
-      <el-table-column label="Created" width="160">
+      <el-table-column :label="t('manage.created')" width="160">
         <template #default="{ row }">{{ row.createdAt?.replace('T', ' ')?.substring(0, 19) }}</template>
       </el-table-column>
-      <el-table-column label="Actions" width="160" fixed="right">
+      <el-table-column :label="t('manage.actions')" width="160" fixed="right">
         <template #default="{ row }">
-          <el-button size="small" text @click="copyUrl(row.ossUrl)">Copy URL</el-button>
-          <el-button size="small" text type="danger" @click="handleDelete(row)">Delete</el-button>
+          <el-button size="small" text @click="copyUrl(row.ossUrl)">{{ t('manage.copyUrl') }}</el-button>
+          <el-button size="small" text type="danger" @click="handleDelete(row)">{{ t('manage.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>

@@ -1,8 +1,10 @@
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTokenStore } from '@/stores/token'
 
 const emit = defineEmits(['upload'])
+const { t } = useI18n()
 const tokenStore = useTokenStore()
 const dragging = ref(false)
 
@@ -47,15 +49,9 @@ function onFileSelect(e) {
       @change="onFileSelect"
     />
     <el-icon class="upload-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="#c0c4cc"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg></el-icon>
-    <p v-if="tokenStore.hasToken" class="upload-hint">
-      Drag and drop images here, or click to browse
-    </p>
-    <p v-else class="upload-hint disabled-hint">
-      Set your auth token first to upload
-    </p>
-    <p class="upload-types">
-      Supported: PNG, JPEG, GIF, WebP, SVG, BMP, TIFF &middot; Max 20MB
-    </p>
+    <p v-if="tokenStore.hasToken" class="upload-hint">{{ t('upload.dragHint') }}</p>
+    <p v-else class="upload-hint disabled-hint">{{ t('upload.noTokenHint') }}</p>
+    <p class="upload-types">{{ t('upload.typeHint') }}</p>
   </div>
 </template>
 

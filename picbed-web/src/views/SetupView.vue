@@ -1,12 +1,14 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { setupToken } from '@/api'
 import { useTokenStore } from '@/stores/token'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const tokenStore = useTokenStore()
+const { t } = useI18n()
 
 const masterKey = ref('')
 const tokenName = ref('Admin')
@@ -21,9 +23,9 @@ async function handleSetup() {
     const res = await setupToken(masterKey.value, tokenName.value || 'Admin')
     generatedToken.value = res.data.data.token
     tokenStore.setToken(generatedToken.value)
-    ElMessage.success('Token created successfully!')
+    ElMessage.success(t('setup.success'))
   } catch (e) {
-    error.value = e.response?.data?.message || 'Setup failed. Check your master key.'
+    error.value = e.response?.data?.message || t('setup.setupFailed')
   } finally {
     loading.value = false
   }
@@ -31,30 +33,27 @@ async function handleSetup() {
 
 function copyAndGo() {
   navigator.clipboard.writeText(generatedToken.value)
-  ElMessage.success('Token copied! Redirecting...')
+  ElMessage.success(t('common.copySuccess'))
   setTimeout(() => router.push('/upload'), 500)
 }
 </script>
 
 <template>
   <div class="setup-page">
-    <h2>Initial Setup</h2>
-    <p class="setup-desc">
-      Create your first auth token using the server's master setup key.
-      This is a one-time operation.
-    </p>
+    <h2>{{ t('setup.title') }}</h2>
+    <p class="setup-desc">{{ t('setup.desc') }}</p>
 
     <el-card v-if="!generatedToken" style="max-width: 500px">
       <el-form @submit.prevent="handleSetup">
-        <el-form-item label="Master Setup Key">
-          <el-input v-model="masterKey" type="password" placeholder="Enter master setup key" />
+        <el-form-item :label="t('setup.masterKey')">
+          <el-input v-model="masterKey" type="password" :placeholder="t('setup.masterKeyPlaceholder')" />
         </el-form-item>
-        <el-form-item label="Token Name">
-          <el-input v-model="tokenName" placeholder="e.g. Admin Laptop" />
+        <el-form-item :label="t('setup.tokenName')">
+          <el-input v-model="tokenName" :placeholder="t('setup.tokenNamePlaceholder')" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSetup" :loading="loading" :disabled="!masterKey">
-            Create Token
+            {{ t('setup.createToken') }}
           </el-button>
         </el-form-item>
         <p v-if="error" class="error-text">{{ error }}</p>
@@ -64,12 +63,12 @@ function copyAndGo() {
     <el-result
       v-else
       icon="success"
-      title="Token Created"
-      sub-title="Copy your token and keep it safe. It won't be shown again."
+      :title="t('setup.success')"
+      :sub-title="t('setup.successDesc')"
     >
       <template #extra>
         <el-input :model-value="generatedToken" readonly size="large" style="margin-bottom: 16px" />
-        <el-button type="primary" @click="copyAndGo">Copy & Go to Upload</el-button>
+        <el-button type="primary" @click="copyAndGo">{{ t('token.copyAndGo') }}</el-button>
       </template>
     </el-result>
   </div>

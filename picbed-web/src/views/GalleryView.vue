@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { getPublicImages, deleteImage } from '@/api'
 import { useTokenStore } from '@/stores/token'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -10,6 +11,7 @@ import EmptyState from '@/components/common/EmptyState.vue'
 
 const router = useRouter()
 const tokenStore = useTokenStore()
+const { t } = useI18n()
 
 const images = ref([])
 const loading = ref(false)
@@ -40,15 +42,15 @@ function closePreview() {
 
 async function handleDelete(img) {
   if (!tokenStore.hasToken) {
-    ElMessage.warning('Set your auth token first')
+    ElMessage.warning(t('token.missingToken'))
     return
   }
   try {
-    await ElMessageBox.confirm(`Delete "${img.filename}"?`, 'Confirm', { type: 'warning' })
+    await ElMessageBox.confirm(t('gallery.deleteConfirm', { name: img.filename }), t('common.confirm'), { type: 'warning' })
     await deleteImage(img.id)
-    ElMessage.success('Deleted')
+    ElMessage.success(t('gallery.deleteSuccess'))
     await loadImages()
-  } catch { /* cancelled */ }
+  } catch { }
 }
 
 function handleLoadMore() {
@@ -61,7 +63,7 @@ onMounted(loadImages)
 
 <template>
   <div class="gallery-page">
-    <h2>Gallery</h2>
+    <h2>{{ t('gallery.title') }}</h2>
     <ImageGrid
       v-if="images.length > 0"
       :images="images"
@@ -71,12 +73,11 @@ onMounted(loadImages)
     />
     <EmptyState
       v-else-if="!loading"
-      message="No images yet. Upload your first image!"
       :show-upload="tokenStore.hasToken"
       @upload="router.push('/upload')"
     />
     <div v-if="images.length < total" class="load-more">
-      <el-button @click="handleLoadMore" :loading="loading">Load More</el-button>
+      <el-button @click="handleLoadMore" :loading="loading">{{ t('gallery.loadMore') }}</el-button>
     </div>
 
     <ImagePreview
