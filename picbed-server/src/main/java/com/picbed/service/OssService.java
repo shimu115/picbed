@@ -5,6 +5,7 @@ import com.aliyun.oss.model.GeneratePresignedUrlRequest;
 import com.picbed.config.OssProperties;
 import com.picbed.exception.OssOperationException;
 import com.picbed.util.OssUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
@@ -16,13 +17,10 @@ import java.util.Map;
 @Service
 public class OssService {
 
-    private final OSS ossClient;
-    private final OssProperties ossProperties;
-
-    public OssService(OSS ossClient, OssProperties ossProperties) {
-        this.ossClient = ossClient;
-        this.ossProperties = ossProperties;
-    }
+    @Autowired
+    private OSS ossClient;
+    @Autowired
+    private OssProperties ossProperties;
 
     public Map<String, Object> generateUploadSignature(String filename, String contentType) {
         if (!OssUtil.ImageType.isAllowedContentType(contentType)) {

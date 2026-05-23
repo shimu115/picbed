@@ -7,8 +7,8 @@ spring:
   datasource:
     url: jdbc:h2:file:./data/picbed;DB_CLOSE_DELAY=-1;MODE=MySQL
     driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    username: picbed
+    password: picbed
   h2:
     console:
       enabled: true

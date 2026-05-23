@@ -48,7 +48,7 @@ export function useOssUpload() {
       uploadStore.markSuccess(uid, accessUrl)
       return accessUrl
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Upload failed'
+      const msg = err.response?.data?.msg || err.message || 'Upload failed'
       uploadStore.markError(uid, msg)
       throw err
     }

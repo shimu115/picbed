@@ -25,7 +25,7 @@ async function handleSetup() {
     tokenStore.setToken(generatedToken.value)
     ElMessage.success(t('setup.success'))
   } catch (e) {
-    error.value = e.response?.data?.message || t('setup.setupFailed')
+    error.value = e.response?.data?.msg || t('setup.setupFailed')
   } finally {
     loading.value = false
   }

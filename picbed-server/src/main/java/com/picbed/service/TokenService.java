@@ -3,6 +3,7 @@ package com.picbed.service;
 import com.picbed.entity.Token;
 import com.picbed.repository.TokenRepository;
 import com.picbed.util.TokenUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +16,8 @@ import java.util.Optional;
 @Service
 public class TokenService {
 
-    private final TokenRepository tokenRepository;
-
-    public TokenService(TokenRepository tokenRepository) {
-        this.tokenRepository = tokenRepository;
-    }
+    @Autowired
+    private TokenRepository tokenRepository;
 
     @Transactional
     public Map<String, Object> createToken(String name) {

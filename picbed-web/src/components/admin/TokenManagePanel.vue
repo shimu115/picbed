@@ -28,7 +28,7 @@ async function handleCreate() {
     newTokenName.value = ''
     await loadTokens()
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || t('token.createFailed'))
+    ElMessage.error(e.response?.data?.msg || t('token.createFailed'))
   }
 }
 

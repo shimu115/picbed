@@ -1,11 +1,12 @@
 package com.picbed.controller;
 
-import com.picbed.dto.ApiResponse;
 import com.picbed.dto.BatchDeleteRequest;
 import com.picbed.dto.ImageSaveRequest;
+import com.picbed.dto.Result;
 import com.picbed.entity.ImageInfo;
 import com.picbed.service.ImageService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,18 +16,15 @@ import java.util.Map;
 @RestController
 public class ImageController {
 
-    private final ImageService imageService;
-
-    public ImageController(ImageService imageService) {
-        this.imageService = imageService;
-    }
+    @Autowired
+    private ImageService imageService;
 
     @GetMapping("/api/public/images")
-    public ResponseEntity<ApiResponse<?>> listImages(
+    public ResponseEntity<Result<Map<String, Object>>> listImages(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         Page<ImageInfo> result = imageService.listImages(page, size);
-        return ResponseEntity.ok(ApiResponse.ok(Map.of(
+        return ResponseEntity.ok(Result.success(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),
                 "totalPages", result.getTotalPages(),
@@ -36,24 +34,26 @@ public class ImageController {
     }
 
     @GetMapping("/api/public/images/{id}")
-    public ResponseEntity<ApiResponse<?>> getImage(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok(imageService.getImage(id)));
+    public ResponseEntity<Result<ImageInfo>> getImage(@PathVariable Long id) {
+        return ResponseEntity.ok(Result.success(imageService.getImage(id)));
     }
 
     @PostMapping("/api/admin/images")
-    public ResponseEntity<ApiResponse<?>> saveImage(@Valid @RequestBody ImageSaveRequest request) {
-        return ResponseEntity.ok(ApiResponse.ok(imageService.saveImage(request)));
+    public ResponseEntity<Result<ImageInfo>> saveImage(
+            @Valid @RequestBody ImageSaveRequest request) {
+        return ResponseEntity.ok(Result.success(imageService.saveImage(request)));
     }
 
     @DeleteMapping("/api/admin/images/{id}")
-    public ResponseEntity<ApiResponse<?>> deleteImage(@PathVariable Long id) {
+    public ResponseEntity<Result<Void>> deleteImage(@PathVariable Long id) {
         imageService.deleteImage(id);
-        return ResponseEntity.ok(ApiResponse.ok());
+        return ResponseEntity.ok(Result.success());
     }
 
     @DeleteMapping("/api/admin/images/batch")
-    public ResponseEntity<ApiResponse<?>> batchDelete(@Valid @RequestBody BatchDeleteRequest request) {
+    public ResponseEntity<Result<Map<String, Object>>> batchDelete(
+            @Valid @RequestBody BatchDeleteRequest request) {
         int count = imageService.batchDelete(request.getIds());
-        return ResponseEntity.ok(ApiResponse.ok(Map.of("deletedCount", count)));
+        return ResponseEntity.ok(Result.success(Map.of("deletedCount", count)));
     }
 }

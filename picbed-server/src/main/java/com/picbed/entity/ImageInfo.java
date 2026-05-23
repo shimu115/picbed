@@ -1,8 +1,10 @@
 package com.picbed.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import java.time.LocalDateTime;
 
+@Data
 @Entity
 @Table(name = "images")
 public class ImageInfo {
@@ -41,31 +43,4 @@ public class ImageInfo {
             createdAt = LocalDateTime.now();
         }
     }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getFilename() { return filename; }
-    public void setFilename(String filename) { this.filename = filename; }
-
-    public String getOssKey() { return ossKey; }
-    public void setOssKey(String ossKey) { this.ossKey = ossKey; }
-
-    public String getOssUrl() { return ossUrl; }
-    public void setOssUrl(String ossUrl) { this.ossUrl = ossUrl; }
-
-    public String getContentType() { return contentType; }
-    public void setContentType(String contentType) { this.contentType = contentType; }
-
-    public Long getFileSize() { return fileSize; }
-    public void setFileSize(Long fileSize) { this.fileSize = fileSize; }
-
-    public Integer getWidth() { return width; }
-    public void setWidth(Integer width) { this.width = width; }
-
-    public Integer getHeight() { return height; }
-    public void setHeight(Integer height) { this.height = height; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

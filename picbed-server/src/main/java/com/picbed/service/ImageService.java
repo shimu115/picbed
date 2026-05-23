@@ -4,6 +4,7 @@ import com.picbed.dto.ImageSaveRequest;
 import com.picbed.entity.ImageInfo;
 import com.picbed.exception.NotFoundException;
 import com.picbed.repository.ImageRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -15,13 +16,10 @@ import java.util.List;
 @Service
 public class ImageService {
 
-    private final ImageRepository imageRepository;
-    private final OssService ossService;
-
-    public ImageService(ImageRepository imageRepository, OssService ossService) {
-        this.imageRepository = imageRepository;
-        this.ossService = ossService;
-    }
+    @Autowired
+    private ImageRepository imageRepository;
+    @Autowired
+    private OssService ossService;
 
     @Transactional
     public ImageInfo saveImage(ImageSaveRequest request) {
