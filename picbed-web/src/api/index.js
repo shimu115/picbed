@@ -25,6 +25,11 @@ api.interceptors.response.use(
 
 export default api
 
+// Status
+export function getStatus() {
+  return api.get('/api/public/status')
+}
+
 // Public APIs
 export function getPublicImages(page = 0, size = 20) {
   return api.get('/api/public/images', { params: { page, size } })

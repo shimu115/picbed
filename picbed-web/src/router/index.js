@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { getStatus } from '@/api'
 
 const routes = [
   {
@@ -32,14 +33,30 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
-  if (to.meta.requiresToken) {
-    const token = localStorage.getItem('auth_token')
-    if (!token) {
-      next('/')
-      return
+let statusChecked = false
+
+router.beforeEach(async (to, from, next) => {
+  const token = localStorage.getItem('auth_token')
+
+  if (to.meta.requiresToken && !token) {
+    next('/')
+    return
+  }
+
+  if (!statusChecked) {
+    statusChecked = true
+    try {
+      const res = await getStatus()
+      const initialized = res.data?.data?.initialized
+      if (!initialized && to.path !== '/setup') {
+        next('/setup')
+        return
+      }
+    } catch {
+      // backend unreachable, proceed anyway
     }
   }
+
   next()
 })
 
