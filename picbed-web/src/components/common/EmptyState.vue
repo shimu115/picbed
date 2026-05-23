@@ -35,4 +35,13 @@ const { t } = useI18n()
   font-size: 16px;
   margin-bottom: 20px;
 }
+
+@media (max-width: 767px) {
+  .empty-state {
+    padding: 48px 16px;
+  }
+  .empty-text {
+    font-size: 14px;
+  }
+}
 </style>

@@ -57,14 +57,31 @@ function handlePageChange(p) {
 }
 
 function copyUrl(url) {
-  navigator.clipboard.writeText(url)
-  ElMessage.success(t('manage.copyUrlSuccess'))
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(url).then(() => {
+      ElMessage.success(t('manage.copyUrlSuccess'))
+    })
+  } else {
+    const ta = document.createElement('textarea')
+    ta.value = url
+    ta.style.position = 'fixed'
+    ta.style.left = '-9999px'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    ElMessage.success(t('manage.copyUrlSuccess'))
+  }
 }
 
 function fileSizeLabel(bytes) {
   if (!bytes) return ''
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'
   return (bytes / 1048576).toFixed(1) + ' MB'
+}
+
+function formatDate(dateStr) {
+  return dateStr?.replace('T', ' ')?.substring(0, 19)
 }
 
 onMounted(loadImages)
@@ -83,33 +100,62 @@ onMounted(loadImages)
       </el-button>
     </div>
 
-    <el-table
-      :data="images"
-      v-loading="loading"
-      @selection-change="s => selection = s"
-      style="margin-top: 10px"
-    >
-      <el-table-column type="selection" width="45" />
-      <el-table-column :label="t('manage.preview')" width="80">
-        <template #default="{ row }">
-          <img :src="row.ossUrl" class="thumb" />
-        </template>
-      </el-table-column>
-      <el-table-column prop="filename" :label="t('manage.filename')" min-width="180" show-overflow-tooltip />
-      <el-table-column prop="contentType" :label="t('manage.type')" width="110" />
-      <el-table-column :label="t('manage.size')" width="90">
-        <template #default="{ row }">{{ fileSizeLabel(row.fileSize) }}</template>
-      </el-table-column>
-      <el-table-column :label="t('manage.created')" width="160">
-        <template #default="{ row }">{{ row.createdAt?.replace('T', ' ')?.substring(0, 19) }}</template>
-      </el-table-column>
-      <el-table-column :label="t('manage.actions')" width="160" fixed="right">
-        <template #default="{ row }">
-          <el-button size="small" text @click="copyUrl(row.ossUrl)">{{ t('manage.copyUrl') }}</el-button>
-          <el-button size="small" text type="danger" @click="handleDelete(row)">{{ t('manage.delete') }}</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <!-- Desktop: table -->
+    <div class="desktop-table">
+      <el-table
+        :data="images"
+        v-loading="loading"
+        @selection-change="s => selection = s"
+        style="margin-top: 10px"
+      >
+        <el-table-column type="selection" width="45" />
+        <el-table-column :label="t('manage.preview')" width="80">
+          <template #default="{ row }">
+            <img :src="row.ossUrl" class="thumb" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="filename" :label="t('manage.filename')" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="contentType" :label="t('manage.type')" width="110" />
+        <el-table-column :label="t('manage.size')" width="90">
+          <template #default="{ row }">{{ fileSizeLabel(row.fileSize) }}</template>
+        </el-table-column>
+        <el-table-column :label="t('manage.created')" width="160">
+          <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+        </el-table-column>
+        <el-table-column :label="t('manage.actions')" width="160" fixed="right">
+          <template #default="{ row }">
+            <el-button size="small" text @click="copyUrl(row.ossUrl)">{{ t('manage.copyUrl') }}</el-button>
+            <el-button size="small" text type="danger" @click="handleDelete(row)">{{ t('manage.delete') }}</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <!-- Mobile: card list -->
+    <div class="mobile-cards">
+      <div v-if="loading" class="card-loading">
+        <el-skeleton :rows="3" animated />
+      </div>
+      <div
+        v-for="img in images"
+        :key="img.id"
+        class="image-card-mobile"
+      >
+        <img :src="img.ossUrl" class="card-thumb" />
+        <div class="card-body">
+          <div class="card-filename">{{ img.filename }}</div>
+          <div class="card-meta">
+            <span>{{ img.contentType }}</span>
+            <span>{{ fileSizeLabel(img.fileSize) }}</span>
+          </div>
+          <div class="card-date">{{ formatDate(img.createdAt) }}</div>
+          <div class="card-actions">
+            <el-button size="small" @click="copyUrl(img.ossUrl)">{{ t('manage.copyUrl') }}</el-button>
+            <el-button size="small" type="danger" plain @click="handleDelete(img)">{{ t('manage.delete') }}</el-button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <el-pagination
       v-if="total > pageSize"
@@ -118,7 +164,7 @@ onMounted(loadImages)
       :current-page="page + 1"
       layout="prev, pager, next, total"
       @current-change="handlePageChange"
-      style="margin-top: 16px; justify-content: center"
+      style="margin-top: 16px; justify-content: center; display: flex; flex-wrap: wrap;"
     />
   </div>
 </template>
@@ -133,5 +179,67 @@ onMounted(loadImages)
 .table-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.desktop-table { display: block; }
+.mobile-cards { display: none; }
+
+@media (max-width: 767px) {
+  .desktop-table { display: none; }
+  .mobile-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+
+  .image-card-mobile {
+    display: flex;
+    gap: 12px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .card-thumb {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .card-filename {
+    font-size: 14px;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .card-meta {
+    font-size: 12px;
+    color: #909399;
+    display: flex;
+    gap: 12px;
+  }
+  .card-date {
+    font-size: 11px;
+    color: #c0c4cc;
+  }
+  .card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .card-actions .el-button {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  .card-loading {
+    padding: 12px;
+    background: #fff;
+    border-radius: 8px;
+  }
 }
 </style>

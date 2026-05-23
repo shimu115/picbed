@@ -46,8 +46,21 @@ async function handleRevoke(token) {
 }
 
 function copyGeneratedToken() {
-  navigator.clipboard.writeText(generatedToken.value)
-  ElMessage.success(t('common.copySuccess'))
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(generatedToken.value).then(() => {
+      ElMessage.success(t('common.copySuccess'))
+    })
+  } else {
+    const ta = document.createElement('textarea')
+    ta.value = generatedToken.value
+    ta.style.position = 'fixed'
+    ta.style.left = '-9999px'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    ElMessage.success(t('common.copySuccess'))
+  }
 }
 
 onMounted(loadTokens)
@@ -76,7 +89,8 @@ onMounted(loadTokens)
       </el-input>
     </div>
 
-    <el-table :data="tokens" v-loading="loading" style="margin-top: 16px">
+    <div class="token-table-wrap">
+      <el-table :data="tokens" v-loading="loading">
       <el-table-column prop="id" :label="t('token.id')" width="70" />
       <el-table-column prop="name" :label="t('token.name')" />
       <el-table-column :label="t('token.active')" width="80">
@@ -97,6 +111,7 @@ onMounted(loadTokens)
         </template>
       </el-table-column>
     </el-table>
+    </div>
   </div>
 </template>
 
@@ -107,6 +122,7 @@ onMounted(loadTokens)
 }
 .name-input {
   max-width: 300px;
+  flex: 1;
 }
 .generated-token-box {
   margin-top: 16px;
@@ -120,5 +136,24 @@ onMounted(loadTokens)
   color: #f56c6c;
   margin-bottom: 8px;
   font-weight: 500;
+}
+.token-table-wrap {
+  margin-top: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767px) {
+  .create-token {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .name-input {
+    max-width: none;
+    width: 100%;
+  }
+  .create-token .el-button {
+    width: 100%;
+  }
 }
 </style>

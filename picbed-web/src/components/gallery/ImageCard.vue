@@ -20,7 +20,18 @@ function fileSizeLabel(bytes) {
 }
 
 function copyUrl() {
-  navigator.clipboard.writeText(props.image.ossUrl).catch(() => {})
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(props.image.ossUrl).catch(() => {})
+  } else {
+    const ta = document.createElement('textarea')
+    ta.value = props.image.ossUrl
+    ta.style.position = 'fixed'
+    ta.style.left = '-9999px'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+  }
   ElMessage.success(t('common.copySuccess'))
 }
 

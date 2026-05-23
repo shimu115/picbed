@@ -51,7 +51,7 @@ public final class OssUtil {
         String safeName = sanitizeFilename(originalFilename);
         String datePrefix = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
         String uuid = UUID.randomUUID().toString().replace("-", "");
-        return datePrefix + "/" + uuid + "-" + safeName;
+        return "picbed/" + datePrefix + "/" + uuid + "-" + safeName;
     }
 
     public static String getPublicUrl(String bucketName, String endpoint, String customDomain, String ossKey) {

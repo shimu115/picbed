@@ -80,6 +80,10 @@ function onFileSelect(e) {
 .upload-icon {
   margin-bottom: 12px;
 }
+.upload-icon :deep(svg) {
+  width: 36px;
+  height: 36px;
+}
 .upload-hint {
   font-size: 15px;
   color: #606266;
@@ -91,5 +95,17 @@ function onFileSelect(e) {
 .upload-types {
   font-size: 12px;
   color: #c0c4cc;
+}
+
+@media (max-width: 767px) {
+  .upload-zone {
+    padding: 36px 16px;
+  }
+  .upload-hint {
+    font-size: 14px;
+  }
+  .upload-types {
+    font-size: 11px;
+  }
 }
 </style>

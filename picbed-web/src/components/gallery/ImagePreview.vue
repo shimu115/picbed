@@ -1,5 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 
 const props = defineProps({
   image: { type: Object, default: null },
@@ -8,6 +9,22 @@ const props = defineProps({
 
 defineEmits(['close'])
 const { t } = useI18n()
+
+function copyUrl(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text)
+  } else {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.left = '-9999px'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+  }
+  ElMessage.success(t('common.copied'))
+}
 </script>
 
 <template>
@@ -32,7 +49,7 @@ const { t } = useI18n()
           <el-descriptions-item :label="t('gallery.url')" :span="2">
             <el-input :model-value="image.ossUrl" readonly size="small">
               <template #append>
-                <el-button @click="navigator.clipboard.writeText(image.ossUrl)">{{ t('common.copy') }}</el-button>
+                <el-button @click="copyUrl(image.ossUrl)">{{ t('common.copy') }}</el-button>
               </template>
             </el-input>
           </el-descriptions-item>

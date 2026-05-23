@@ -36,7 +36,7 @@ function removeToken() {
       </el-button>
     </template>
 
-    <el-dialog v-model="showDialog" :title="t('token.setAuthToken')" width="420px">
+    <el-dialog v-model="showDialog" :title="t('token.setAuthToken')" width="90%" style="max-width: 420px">
       <el-input
         v-model="inputToken"
         :placeholder="t('token.pasteToken')"

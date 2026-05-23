@@ -25,4 +25,10 @@ import AppHeader from '@/components/layout/AppHeader.vue'
   margin: 0 auto;
   box-sizing: border-box;
 }
+
+@media (max-width: 767px) {
+  .main-content {
+    padding: 12px;
+  }
+}
 </style>
