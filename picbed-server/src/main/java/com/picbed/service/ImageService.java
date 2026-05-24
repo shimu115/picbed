@@ -25,7 +25,7 @@ public class ImageService {
     private OssService ossService;
 
     @Transactional
-    public ImageInfo saveImage(ImageSaveRequest request) {
+    public ImageInfo saveImage(ImageSaveRequest request, Long tokenId) {
         ImageInfo info = new ImageInfo();
         info.setFilename(request.getFilename());
         info.setOssKey(request.getOssKey());
@@ -35,14 +35,22 @@ public class ImageService {
         info.setFileSize(request.getFileSize());
         info.setWidth(request.getWidth());
         info.setHeight(request.getHeight());
+        info.setTokenId(tokenId);
         ImageInfo saved = imageRepository.save(info);
-        log.info("Saved image '{}' (id={}, size={})", saved.getFilename(), saved.getId(), saved.getFileSize());
+        log.info("Saved image '{}' (id={}, size={}, tokenId={})", saved.getFilename(), saved.getId(), saved.getFileSize(), tokenId);
         return saved;
     }
 
     public Page<ImageInfo> listImages(int page, int size) {
         return imageRepository.findAll(
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+    }
+
+    public Page<ImageInfo> listImagesByOwner(int page, int size, Long tokenId, String role) {
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            return imageRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(page, size));
+        }
+        return imageRepository.findByTokenIdOrderByCreatedAtDesc(tokenId, PageRequest.of(page, size));
     }
 
     public java.util.Optional<ImageInfo> findByMd5Hash(String md5Hash) {

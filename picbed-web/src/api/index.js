@@ -53,6 +53,10 @@ export function getUploadSignature(filename, contentType, md5) {
 }
 
 // Admin - images
+export function getAdminImages(page = 0, size = 20) {
+  return api.get('/api/admin/images', { params: { page, size } })
+}
+
 export function saveImageMetadata(data) {
   return api.post('/api/admin/images', data)
 }

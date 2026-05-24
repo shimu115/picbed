@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTokenStore } from '@/stores/token'
-import { getPublicImages, deleteImage, batchDeleteImages } from '@/api'
+import { getAdminImages, deleteImage, batchDeleteImages } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { t } = useI18n()
@@ -22,7 +22,7 @@ const allSelected = computed(() =>
 async function loadImages() {
   loading.value = true
   try {
-    const res = await getPublicImages(page.value, pageSize.value)
+    const res = await getAdminImages(page.value, pageSize.value)
     images.value = res.data.data.content
     total.value = res.data.data.totalElements
   } finally {

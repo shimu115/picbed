@@ -1,5 +1,6 @@
 package com.picbed.interceptor;
 
+import com.picbed.entity.Token;
 import com.picbed.exception.UnauthorizedException;
 import com.picbed.service.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,15 +28,21 @@ public class TokenInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        String token = request.getHeader(AUTH_HEADER);
-        if (token == null || token.isBlank()) {
+        String rawToken = request.getHeader(AUTH_HEADER);
+        if (rawToken == null || rawToken.isBlank()) {
             log.warn("Missing X-Auth-Token from {} to {}", request.getRemoteAddr(), request.getRequestURI());
             throw new UnauthorizedException("Missing X-Auth-Token header");
         }
 
-        if (!tokenService.validateToken(token)) {
+        if (!tokenService.validateToken(rawToken)) {
             log.warn("Invalid/expired token from {} to {}", request.getRemoteAddr(), request.getRequestURI());
             throw new UnauthorizedException("Invalid or expired token");
+        }
+
+        Token token = tokenService.findByRawToken(rawToken).orElse(null);
+        if (token != null) {
+            request.setAttribute("tokenId", token.getId());
+            request.setAttribute("tokenRole", token.getRole());
         }
 
         return true;

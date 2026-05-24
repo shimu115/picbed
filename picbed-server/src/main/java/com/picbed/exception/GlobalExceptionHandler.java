@@ -12,6 +12,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Result<Void>> handleForbidden(ForbiddenException e) {
+        log.warn("Forbidden: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Result.error(e.getMessage(), 403));
+    }
+
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<Result<Void>> handleUnauthorized(UnauthorizedException e) {
         log.warn("Unauthorized: {}", e.getMessage());

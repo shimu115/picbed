@@ -37,6 +37,9 @@ public class ImageInfo {
     @Column
     private Integer height;
 
+    @Column(name = "token_id")
+    private Long tokenId;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
