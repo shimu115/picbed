@@ -2,6 +2,26 @@ import SparkMD5 from 'spark-md5'
 import { getUploadSignature, saveImageMetadata } from '@/api'
 import { useUploadStore } from '@/stores/upload'
 
+function getImageDimensions(file) {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) {
+      resolve({ width: null, height: null })
+      return
+    }
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      resolve({ width: img.naturalWidth, height: img.naturalHeight })
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      resolve({ width: null, height: null })
+    }
+    img.src = url
+  })
+}
+
 function computeMd5(file) {
   return new Promise((resolve, reject) => {
     const blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice
@@ -41,7 +61,7 @@ export function useOssUpload() {
     uploadStore.addFile(uid, file)
 
     try {
-      const md5 = await computeMd5(file)
+      const [md5, dims] = await Promise.all([computeMd5(file), getImageDimensions(file)])
 
       const sigRes = await getUploadSignature(file.name, file.type || 'application/octet-stream', md5)
       const data = sigRes.data.data
@@ -83,8 +103,8 @@ export function useOssUpload() {
         contentType: file.type || 'application/octet-stream',
         md5,
         fileSize: file.size,
-        width: null,
-        height: null,
+        width: dims.width,
+        height: dims.height,
         published
       })
 

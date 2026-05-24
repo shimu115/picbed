@@ -50,7 +50,7 @@
     "filename": "Filename",
     "type": "Type",
     "size": "Size",
-    "dimensions": "Dimensions",
+    "dimensions": "Resolution",
     "url": "URL",
     "copyUrl": "Copy URL",
     "delete": "Delete",

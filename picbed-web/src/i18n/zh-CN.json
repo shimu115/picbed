@@ -50,7 +50,7 @@
     "filename": "文件名",
     "type": "类型",
     "size": "大小",
-    "dimensions": "尺寸",
+    "dimensions": "分辨率",
     "url": "URL",
     "copyUrl": "复制链接",
     "delete": "删除",
