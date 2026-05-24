@@ -64,6 +64,11 @@ export function batchDeleteImages(ids) {
   return api.delete('/api/admin/images/batch', { data: { ids } })
 }
 
+// Verify
+export function verifyToken() {
+  return api.get('/api/verify')
+}
+
 // Admin - tokens
 export function listTokens() {
   return api.get('/api/admin/tokens')

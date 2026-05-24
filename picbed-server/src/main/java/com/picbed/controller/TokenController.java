@@ -29,6 +29,22 @@ public class TokenController {
         return ResponseEntity.ok(Result.success(Map.of("initialized", initialized)));
     }
 
+    @GetMapping("/api/verify")
+    public ResponseEntity<Result<Map<String, Object>>> verifyToken(
+            @RequestHeader("X-Auth-Token") String authToken) {
+        Token token = tokenService.findByRawToken(authToken).orElse(null);
+        if (token == null || !token.getIsActive()) {
+            return ResponseEntity.status(401)
+                    .body(Result.error("Invalid token", 401));
+        }
+        return ResponseEntity.ok(Result.success(Map.of(
+                "valid", true,
+                "id", token.getId(),
+                "name", token.getName(),
+                "role", token.getRole()
+        )));
+    }
+
     @PostMapping("/api/setup/token")
     public ResponseEntity<Result<Map<String, Object>>> setupToken(
             @RequestHeader(value = "X-Setup-Token", required = false) String masterToken,

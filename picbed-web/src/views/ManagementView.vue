@@ -1,16 +1,18 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
+import { useTokenStore } from '@/stores/token'
 import TokenManagePanel from '@/components/admin/TokenManagePanel.vue'
 import ImageManageTable from '@/components/admin/ImageManageTable.vue'
 
 const { t } = useI18n()
+const tokenStore = useTokenStore()
 </script>
 
 <template>
   <div class="management-page">
     <h2>{{ t('manage.title') }}</h2>
 
-    <div class="management-section">
+    <div v-if="tokenStore.isAdmin" class="management-section">
       <h3>{{ t('manage.tokens') }}</h3>
       <TokenManagePanel />
     </div>
