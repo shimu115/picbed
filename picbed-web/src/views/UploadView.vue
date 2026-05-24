@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTokenStore } from '@/stores/token'
 import { useOssUpload } from '@/composables/useOssUpload'
@@ -9,13 +10,14 @@ import { ElMessage } from 'element-plus'
 const { t } = useI18n()
 const tokenStore = useTokenStore()
 const { uploadFiles } = useOssUpload()
+const publishToGallery = ref(false)
 
 async function handleUpload(files) {
   if (!tokenStore.hasToken) {
     ElMessage.warning(t('upload.noTokenHint'))
     return
   }
-  const results = await uploadFiles(files)
+  const results = await uploadFiles(files, publishToGallery.value)
   const success = results.filter(r => r.success).length
   const failed = results.filter(r => !r.success).length
   if (success > 0) ElMessage.success(t('upload.uploadSuccess', { count: success }))
@@ -26,7 +28,23 @@ async function handleUpload(files) {
 <template>
   <div class="upload-page">
     <h2>{{ t('upload.title') }}</h2>
+    <div class="upload-options">
+      <el-switch
+        v-model="publishToGallery"
+        :active-text="t('upload.publishToGallery')"
+        size="small"
+      />
+    </div>
     <UploadZone @upload="handleUpload" />
     <UploadQueue />
   </div>
 </template>
+
+<style scoped>
+.upload-options {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+</style>

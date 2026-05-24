@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTokenStore } from '@/stores/token'
-import { getAdminImages, deleteImage, batchDeleteImages } from '@/api'
+import { getAdminImages, deleteImage, batchDeleteImages, batchPublishImages } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { t } = useI18n()
@@ -13,6 +13,7 @@ const total = ref(0)
 const page = ref(0)
 const pageSize = ref(20)
 const selectMode = ref(false)
+const publishedFilter = ref(undefined)
 
 const selectedIds = computed(() => new Set(selection.value.map(i => i.id)))
 const allSelected = computed(() =>
@@ -22,12 +23,19 @@ const allSelected = computed(() =>
 async function loadImages() {
   loading.value = true
   try {
-    const res = await getAdminImages(page.value, pageSize.value)
+    const res = await getAdminImages(page.value, pageSize.value, publishedFilter.value)
     images.value = res.data.data.content
     total.value = res.data.data.totalElements
   } finally {
     loading.value = false
   }
+}
+
+function onFilterChange() {
+  page.value = 0
+  selection.value = []
+  selectMode.value = false
+  loadImages()
 }
 
 function enterSelectMode(img) {
@@ -62,16 +70,14 @@ function exitSelectMode() {
 }
 
 async function handleDelete(img) {
-  let confirmed = false
   try {
     await ElMessageBox.confirm(
       t('manage.deleteConfirm', { name: img.filename }),
       t('common.confirm'),
       { type: 'warning' }
     )
-    confirmed = true
   } catch {
-    return // user cancelled
+    return
   }
   try {
     await deleteImage(img.id)
@@ -87,14 +93,12 @@ async function handleDelete(img) {
 }
 
 async function handleBatchDelete() {
-  let confirmed = false
   try {
     await ElMessageBox.confirm(
       t('manage.batchDeleteConfirm', { count: selection.value.length }),
       t('common.confirm'),
       { type: 'warning' }
     )
-    confirmed = true
   } catch {
     return
   }
@@ -105,6 +109,36 @@ async function handleBatchDelete() {
     selection.value = []
     selectMode.value = false
     await loadImages()
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
+    if (e.response?.status === 401) {
+      useTokenStore().clearToken()
+    }
+  }
+}
+
+async function handleBatchPublish(published) {
+  const ids = selection.value.map(i => i.id)
+  try {
+    await batchPublishImages(ids, published)
+    ElMessage.success(t('manage.batchPublishSuccess', { count: ids.length }))
+    selection.value = []
+    selectMode.value = false
+    await loadImages()
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
+    if (e.response?.status === 401) {
+      useTokenStore().clearToken()
+    }
+  }
+}
+
+async function handleTogglePublish(img) {
+  const newVal = !img.isPublished
+  try {
+    await batchPublishImages([img.id], newVal)
+    img.isPublished = newVal
+    ElMessage.success(t('manage.batchPublishSuccess', { count: 1 }))
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || t('error.serverError'))
     if (e.response?.status === 401) {
@@ -151,24 +185,52 @@ onMounted(loadImages)
 
 <template>
   <div class="image-table">
+    <!-- Toolbar: filter + batch actions (desktop) -->
+    <div class="toolbar">
+      <el-select
+        v-model="publishedFilter"
+        :placeholder="t('manage.filterAll')"
+        size="small"
+        clearable
+        style="width: 130px"
+        @change="onFilterChange"
+      >
+        <el-option :value="undefined" :label="t('manage.filterAll')" />
+        <el-option :value="true" :label="t('manage.filterPublished')" />
+        <el-option :value="false" :label="t('manage.filterUnpublished')" />
+      </el-select>
+      <div class="toolbar-actions desktop-only">
+        <el-button
+          size="small"
+          :disabled="selection.length === 0"
+          @click="handleBatchPublish(true)"
+        >
+          {{ t('manage.batchPublish', { count: selection.length }) }}
+        </el-button>
+        <el-button
+          size="small"
+          :disabled="selection.length === 0"
+          @click="handleBatchPublish(false)"
+        >
+          {{ t('manage.batchUnpublish', { count: selection.length }) }}
+        </el-button>
+        <el-button
+          type="danger"
+          size="small"
+          :disabled="selection.length === 0"
+          @click="handleBatchDelete"
+        >
+          {{ t('manage.deleteSelected', { count: selection.length }) }}
+        </el-button>
+      </div>
+    </div>
+
     <!-- selection mode bar (mobile) -->
     <div v-if="selectMode" class="select-bar mobile-only">
       <el-button size="small" text @click="exitSelectMode">{{ t('common.cancel') }}</el-button>
-      <span class="select-count">{{ t('manage.deleteSelected', { count: selection.length }) }}</span>
+      <span class="select-count">{{ selection.length }} {{ t('manage.published') }}</span>
       <el-button size="small" text @click="toggleSelectAll">
         {{ allSelected ? t('manage.deselectAll') : t('manage.selectAll') }}
-      </el-button>
-    </div>
-
-    <!-- Desktop: batch delete button -->
-    <div class="table-actions desktop-only">
-      <el-button
-        type="danger"
-        size="small"
-        :disabled="selection.length === 0"
-        @click="handleBatchDelete"
-      >
-        {{ t('manage.deleteSelected', { count: selection.length }) }}
       </el-button>
     </div>
 
@@ -187,6 +249,15 @@ onMounted(loadImages)
           </template>
         </el-table-column>
         <el-table-column prop="filename" :label="t('manage.filename')" min-width="180" show-overflow-tooltip />
+        <el-table-column :label="t('manage.published')" width="80" align="center">
+          <template #default="{ row }">
+            <el-switch
+              :model-value="row.isPublished"
+              size="small"
+              @change="handleTogglePublish(row)"
+            />
+          </template>
+        </el-table-column>
         <el-table-column prop="contentType" :label="t('manage.type')" width="110" />
         <el-table-column :label="t('manage.size')" width="90">
           <template #default="{ row }">{{ fileSizeLabel(row.fileSize) }}</template>
@@ -224,6 +295,12 @@ onMounted(loadImages)
           <div class="card-meta">
             <span>{{ img.contentType }}</span>
             <span>{{ fileSizeLabel(img.fileSize) }}</span>
+            <el-switch
+              :model-value="img.isPublished"
+              size="small"
+              @click.stop
+              @change="handleTogglePublish(img)"
+            />
           </div>
           <div class="card-date">{{ formatDate(img.createdAt) }}</div>
           <div v-if="!selectMode" class="card-actions">
@@ -234,11 +311,17 @@ onMounted(loadImages)
       </div>
     </div>
 
-    <!-- Mobile: floating batch delete button -->
+    <!-- Mobile: floating action bar -->
     <transition name="float-fade">
-      <div v-if="selectMode && selection.length > 0" class="float-delete-bar mobile-only">
-        <el-button type="danger" round @click="handleBatchDelete">
-          {{ t('manage.deleteSelected', { count: selection.length }) }}
+      <div v-if="selectMode && selection.length > 0" class="float-action-bar mobile-only">
+        <el-button size="small" round @click="handleBatchPublish(true)">
+          {{ t('manage.publish') }} ({{ selection.length }})
+        </el-button>
+        <el-button size="small" round @click="handleBatchPublish(false)">
+          {{ t('manage.unpublish') }} ({{ selection.length }})
+        </el-button>
+        <el-button size="small" type="danger" round @click="handleBatchDelete">
+          {{ t('manage.delete') }} ({{ selection.length }})
         </el-button>
       </div>
     </transition>
@@ -262,9 +345,18 @@ onMounted(loadImages)
   object-fit: cover;
   border-radius: 4px;
 }
-.table-actions {
+
+.toolbar {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
 }
 
 /* Responsive visibility */
@@ -342,6 +434,7 @@ onMounted(loadImages)
   color: #909399;
   display: flex;
   gap: 12px;
+  align-items: center;
 }
 .card-date {
   font-size: 11px;
@@ -362,13 +455,19 @@ onMounted(loadImages)
   border-radius: 8px;
 }
 
-/* Floating delete bar */
-.float-delete-bar {
+/* Floating action bar */
+.float-action-bar {
   position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
+  display: flex;
+  gap: 8px;
+  background: #fff;
+  padding: 10px 16px;
+  border-radius: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 .float-fade-enter-active,
 .float-fade-leave-active {

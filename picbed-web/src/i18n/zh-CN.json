@@ -70,7 +70,8 @@
     "error": "失败",
     "uploadSuccess": "{count} 个文件上传成功",
     "uploadFailed": "{count} 个文件上传失败",
-    "uploadFailedMsg": "上传失败"
+    "uploadFailedMsg": "上传失败",
+    "publishToGallery": "展示到画廊"
   },
   "manage": {
     "title": "管理",
@@ -91,7 +92,16 @@
     "copyUrlSuccess": "链接已复制",
     "delete": "删除",
     "deleteConfirm": "确定要删除 \"{name}\" 吗？",
-    "deleteSuccess": "已删除"
+    "deleteSuccess": "已删除",
+    "published": "展示",
+    "publish": "展示",
+    "unpublish": "取消展示",
+    "batchPublish": "批量展示 ({count})",
+    "batchUnpublish": "批量取消展示 ({count})",
+    "batchPublishSuccess": "已更新 {count} 张图片",
+    "filterAll": "全部",
+    "filterPublished": "已展示",
+    "filterUnpublished": "未展示"
   },
   "setup": {
     "title": "初始化设置",

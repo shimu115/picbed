@@ -36,7 +36,7 @@ function computeMd5(file) {
 export function useOssUpload() {
   const uploadStore = useUploadStore()
 
-  async function uploadFile(file) {
+  async function uploadFile(file, published = false) {
     const uid = file.uid || Date.now() + '-' + Math.random().toString(36).slice(2)
     uploadStore.addFile(uid, file)
 
@@ -84,7 +84,8 @@ export function useOssUpload() {
         md5,
         fileSize: file.size,
         width: null,
-        height: null
+        height: null,
+        published
       })
 
       uploadStore.markSuccess(uid, accessUrl)
@@ -96,11 +97,11 @@ export function useOssUpload() {
     }
   }
 
-  async function uploadFiles(files) {
+  async function uploadFiles(files, published = false) {
     const results = []
     for (const file of files) {
       try {
-        const url = await uploadFile(file)
+        const url = await uploadFile(file, published)
         results.push({ file, success: true, url })
       } catch (err) {
         results.push({ file, success: false, error: err.message })

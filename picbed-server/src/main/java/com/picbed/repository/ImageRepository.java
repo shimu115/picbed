@@ -15,5 +15,9 @@ public interface ImageRepository extends JpaRepository<ImageInfo, Long> {
 
     Page<ImageInfo> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
+    Page<ImageInfo> findByIsPublishedOrderByCreatedAtDesc(Boolean isPublished, Pageable pageable);
+
     Page<ImageInfo> findByTokenIdOrderByCreatedAtDesc(Long tokenId, Pageable pageable);
+
+    Page<ImageInfo> findByTokenIdAndIsPublishedOrderByCreatedAtDesc(Long tokenId, Boolean isPublished, Pageable pageable);
 }

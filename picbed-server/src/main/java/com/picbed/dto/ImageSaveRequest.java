@@ -27,6 +27,8 @@ public class ImageSaveRequest {
     @Positive
     private Long fileSize;
 
+    private Boolean published = false;
+
     private Integer width;
     private Integer height;
 }

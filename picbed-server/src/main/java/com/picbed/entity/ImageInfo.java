@@ -40,6 +40,9 @@ public class ImageInfo {
     @Column(name = "token_id")
     private Long tokenId;
 
+    @Column(name = "is_published", nullable = false)
+    private Boolean isPublished = false;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

@@ -70,7 +70,8 @@
     "error": "Error",
     "uploadSuccess": "{count} file(s) uploaded",
     "uploadFailed": "{count} file(s) failed",
-    "uploadFailedMsg": "Upload failed"
+    "uploadFailedMsg": "Upload failed",
+    "publishToGallery": "Show in gallery"
   },
   "manage": {
     "title": "Management",
@@ -91,7 +92,16 @@
     "copyUrlSuccess": "URL copied",
     "delete": "Delete",
     "deleteConfirm": "Delete \"{name}\"?",
-    "deleteSuccess": "Deleted"
+    "deleteSuccess": "Deleted",
+    "published": "Published",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "batchPublish": "Publish ({count})",
+    "batchUnpublish": "Unpublish ({count})",
+    "batchPublishSuccess": "Updated {count} images",
+    "filterAll": "All",
+    "filterPublished": "Published",
+    "filterUnpublished": "Unpublished"
   },
   "setup": {
     "title": "Initial Setup",

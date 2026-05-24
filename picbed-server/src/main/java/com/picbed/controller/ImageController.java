@@ -1,6 +1,7 @@
 package com.picbed.controller;
 
 import com.picbed.dto.BatchDeleteRequest;
+import com.picbed.dto.BatchPublishRequest;
 import com.picbed.dto.ImageSaveRequest;
 import com.picbed.dto.Result;
 import com.picbed.entity.ImageInfo;
@@ -28,7 +29,7 @@ public class ImageController {
     public ResponseEntity<Result<Map<String, Object>>> listImages(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Page<ImageInfo> result = imageService.listImages(page, size);
+        Page<ImageInfo> result = imageService.listPublishedImages(page, size);
         return ResponseEntity.ok(Result.success(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),
@@ -47,10 +48,11 @@ public class ImageController {
     public ResponseEntity<Result<Map<String, Object>>> listManagedImages(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) Boolean published,
             HttpServletRequest request) {
         Long tokenId = (Long) request.getAttribute("tokenId");
         String tokenRole = (String) request.getAttribute("tokenRole");
-        Page<ImageInfo> result = imageService.listImagesByOwner(page, size, tokenId, tokenRole);
+        Page<ImageInfo> result = imageService.listImagesByOwner(page, size, tokenId, tokenRole, published);
         return ResponseEntity.ok(Result.success(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),
@@ -62,10 +64,25 @@ public class ImageController {
 
     @PostMapping("/api/admin/images")
     public ResponseEntity<Result<ImageInfo>> saveImage(
-            @Valid @RequestBody ImageSaveRequest request,
+            @Valid @RequestBody ImageSaveRequest req,
             HttpServletRequest httpRequest) {
         Long tokenId = (Long) httpRequest.getAttribute("tokenId");
-        return ResponseEntity.ok(Result.success(imageService.saveImage(request, tokenId)));
+        return ResponseEntity.ok(Result.success(imageService.saveImage(req, tokenId)));
+    }
+
+    @PutMapping("/api/admin/images/batch/publish")
+    public ResponseEntity<Result<Map<String, Object>>> batchPublish(
+            @Valid @RequestBody BatchPublishRequest req,
+            HttpServletRequest httpRequest) {
+        String tokenRole = (String) httpRequest.getAttribute("tokenRole");
+        if (!"ADMIN".equalsIgnoreCase(tokenRole)) {
+            Long tokenId = (Long) httpRequest.getAttribute("tokenId");
+            for (Long id : req.getIds()) {
+                checkOwnership(id, httpRequest);
+            }
+        }
+        int count = imageService.batchPublish(req.getIds(), req.getPublished());
+        return ResponseEntity.ok(Result.success(Map.of("updatedCount", count)));
     }
 
     @DeleteMapping("/api/admin/images/{id}")
@@ -96,7 +113,7 @@ public class ImageController {
         Long tokenId = (Long) request.getAttribute("tokenId");
         ImageInfo image = imageService.getImage(imageId);
         if (!tokenId.equals(image.getTokenId())) {
-            log.warn("Ownership check failed: tokenId={} attempted to delete image id={} owned by tokenId={}",
+            log.warn("Ownership check failed: tokenId={} attempted to manage image id={} owned by tokenId={}",
                     tokenId, imageId, image.getTokenId());
             throw new ForbiddenException("You can only manage your own images");
         }

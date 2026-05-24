@@ -36,21 +36,30 @@ public class ImageService {
         info.setWidth(request.getWidth());
         info.setHeight(request.getHeight());
         info.setTokenId(tokenId);
+        info.setIsPublished(request.getPublished() != null && request.getPublished());
         ImageInfo saved = imageRepository.save(info);
-        log.info("Saved image '{}' (id={}, size={}, tokenId={})", saved.getFilename(), saved.getId(), saved.getFileSize(), tokenId);
+        log.info("Saved image '{}' (id={}, size={}, tokenId={}, published={})",
+                saved.getFilename(), saved.getId(), saved.getFileSize(), tokenId, saved.getIsPublished());
         return saved;
     }
 
-    public Page<ImageInfo> listImages(int page, int size) {
-        return imageRepository.findAll(
-                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+    public Page<ImageInfo> listPublishedImages(int page, int size) {
+        return imageRepository.findByIsPublishedOrderByCreatedAtDesc(true,
+                PageRequest.of(page, size));
     }
 
-    public Page<ImageInfo> listImagesByOwner(int page, int size, Long tokenId, String role) {
+    public Page<ImageInfo> listImagesByOwner(int page, int size, Long tokenId, String role, Boolean published) {
+        PageRequest pageRequest = PageRequest.of(page, size);
         if ("ADMIN".equalsIgnoreCase(role)) {
-            return imageRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(page, size));
+            if (published != null) {
+                return imageRepository.findByIsPublishedOrderByCreatedAtDesc(published, pageRequest);
+            }
+            return imageRepository.findAllByOrderByCreatedAtDesc(pageRequest);
         }
-        return imageRepository.findByTokenIdOrderByCreatedAtDesc(tokenId, PageRequest.of(page, size));
+        if (published != null) {
+            return imageRepository.findByTokenIdAndIsPublishedOrderByCreatedAtDesc(tokenId, published, pageRequest);
+        }
+        return imageRepository.findByTokenIdOrderByCreatedAtDesc(tokenId, pageRequest);
     }
 
     public java.util.Optional<ImageInfo> findByMd5Hash(String md5Hash) {
@@ -89,6 +98,24 @@ public class ImageService {
             }
         }
         log.info("Batch delete completed: {}/{} images deleted", count, ids.size());
+        return count;
+    }
+
+    @Transactional
+    public int batchPublish(List<Long> ids, boolean published) {
+        log.info("Batch {} {} images", published ? "publishing" : "unpublishing", ids.size());
+        int count = 0;
+        for (Long id : ids) {
+            ImageInfo image = imageRepository.findById(id).orElse(null);
+            if (image != null) {
+                image.setIsPublished(published);
+                imageRepository.save(image);
+                count++;
+            } else {
+                log.warn("Skipped non-existent image id={} in batch publish", id);
+            }
+        }
+        log.info("Batch publish completed: {}/{} images set published={}", count, ids.size(), published);
         return count;
     }
 }
