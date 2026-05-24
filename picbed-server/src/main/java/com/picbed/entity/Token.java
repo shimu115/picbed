@@ -19,6 +19,9 @@ public class Token {
     @Column(name = "token_hash", nullable = false, unique = true, length = 64)
     private String tokenHash;
 
+    @Column(nullable = false, length = 10)
+    private String role = "USER";
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 

@@ -10,5 +10,9 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
 
     Optional<Token> findByTokenHashAndIsActiveTrue(String tokenHash);
 
+    Optional<Token> findByTokenHash(String tokenHash);
+
     List<Token> findByIsActiveTrue();
+
+    long countByIsActiveTrueAndRole(String role);
 }

@@ -42,7 +42,11 @@ async function handleRevoke(token) {
     await revokeToken(token.id)
     ElMessage.success(t('token.revokeSuccess'))
     await loadTokens()
-  } catch { /* cancelled */ }
+  } catch (e) {
+    if (e.response?.data?.msg) {
+      ElMessage.error(e.response.data.msg)
+    }
+  }
 }
 
 function copyGeneratedToken() {
@@ -93,6 +97,13 @@ onMounted(loadTokens)
       <el-table :data="tokens" v-loading="loading">
       <el-table-column prop="id" :label="t('token.id')" width="70" />
       <el-table-column prop="name" :label="t('token.name')" />
+      <el-table-column :label="t('token.role')" width="80">
+        <template #default="{ row }">
+          <el-tag :type="row.role === 'ADMIN' ? 'warning' : 'info'" size="small">
+            {{ row.role === 'ADMIN' ? t('token.admin') : t('token.user') }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column :label="t('token.active')" width="80">
         <template #default="{ row }">
           <el-tag :type="row.isActive ? 'success' : 'danger'" size="small">

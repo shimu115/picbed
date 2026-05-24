@@ -3,6 +3,7 @@ package com.picbed.controller;
 import com.picbed.config.SetupTokenManager;
 import com.picbed.dto.Result;
 import com.picbed.dto.TokenCreateRequest;
+import com.picbed.entity.Token;
 import com.picbed.service.TokenService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -48,26 +49,45 @@ public class TokenController {
                     .body(Result.error("Tokens already exist, use admin API to create more", 400));
         }
 
-        log.info("Creating token for {}", request.getName());
-        return ResponseEntity.ok(Result.success(tokenService.createToken(request.getName())));
+        log.info("Creating initial admin token for {}", request.getName());
+        return ResponseEntity.ok(Result.success(tokenService.createToken(request.getName(), "ADMIN")));
     }
 
     @GetMapping("/api/admin/tokens")
-    public ResponseEntity<Result<List<Map<String, Object>>>> listTokens() {
+    public ResponseEntity<Result<List<Map<String, Object>>>> listTokens(
+            @RequestHeader("X-Auth-Token") String authToken) {
+        Token requester = tokenService.findByRawToken(authToken).orElse(null);
+        if (requester == null || !"ADMIN".equalsIgnoreCase(requester.getRole())) {
+            return ResponseEntity.status(403)
+                    .body(Result.error("Admin role required", 403));
+        }
         return ResponseEntity.ok(Result.success(tokenService.listTokens()));
     }
 
     @PostMapping("/api/admin/tokens")
     public ResponseEntity<Result<Map<String, Object>>> createToken(
+            @RequestHeader("X-Auth-Token") String authToken,
             @Valid @RequestBody TokenCreateRequest request) {
-        return ResponseEntity.ok(Result.success(tokenService.createToken(request.getName())));
+        Token requester = tokenService.findByRawToken(authToken).orElse(null);
+        if (requester == null || !"ADMIN".equalsIgnoreCase(requester.getRole())) {
+            return ResponseEntity.status(403)
+                    .body(Result.error("Admin role required", 403));
+        }
+        String role = request.getRole() != null ? request.getRole() : "USER";
+        return ResponseEntity.ok(Result.success(tokenService.createToken(request.getName(), role)));
     }
 
     @DeleteMapping("/api/admin/tokens/{id}")
-    public ResponseEntity<Result<Void>> revokeToken(@PathVariable Long id) {
-        if (tokenService.revokeToken(id)) {
-            return ResponseEntity.ok(Result.success());
+    public ResponseEntity<Result<Void>> revokeToken(
+            @RequestHeader("X-Auth-Token") String authToken,
+            @PathVariable Long id) {
+        try {
+            if (tokenService.revokeToken(id, authToken)) {
+                return ResponseEntity.ok(Result.success());
+            }
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));
         }
-        return ResponseEntity.notFound().build();
     }
 }

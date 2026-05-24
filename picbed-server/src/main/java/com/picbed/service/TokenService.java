@@ -20,19 +20,24 @@ public class TokenService {
     private TokenRepository tokenRepository;
 
     @Transactional
-    public Map<String, Object> createToken(String name) {
+    public Map<String, Object> createToken(String name, String role) {
         String rawToken = TokenUtil.generateRawToken();
         String tokenHash = TokenUtil.hashToken(rawToken);
+
+        String resolvedRole = (role != null && (role.equalsIgnoreCase("ADMIN") || role.equalsIgnoreCase("USER")))
+                ? role.toUpperCase() : "USER";
 
         Token token = new Token();
         token.setName(name);
         token.setTokenHash(tokenHash);
+        token.setRole(resolvedRole);
         token.setIsActive(true);
         tokenRepository.save(token);
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", token.getId());
         result.put("name", token.getName());
+        result.put("role", token.getRole());
         result.put("token", rawToken);
         result.put("createdAt", token.getCreatedAt());
         return result;
@@ -47,8 +52,14 @@ public class TokenService {
         if (opt.isEmpty()) {
             return false;
         }
-        Token token = opt.get();
-        return !TokenUtil.isExpired(token.getExpiresAt());
+        return !TokenUtil.isExpired(opt.get().getExpiresAt());
+    }
+
+    public Optional<Token> findByRawToken(String rawToken) {
+        if (rawToken == null || rawToken.isBlank()) {
+            return Optional.empty();
+        }
+        return tokenRepository.findByTokenHash(TokenUtil.hashToken(rawToken));
     }
 
     public List<Map<String, Object>> listTokens() {
@@ -56,6 +67,7 @@ public class TokenService {
             Map<String, Object> m = new HashMap<>();
             m.put("id", t.getId());
             m.put("name", t.getName());
+            m.put("role", t.getRole());
             m.put("isActive", t.getIsActive());
             m.put("createdAt", t.getCreatedAt());
             m.put("expiresAt", t.getExpiresAt());
@@ -64,12 +76,38 @@ public class TokenService {
     }
 
     @Transactional
-    public boolean revokeToken(Long id) {
-        return tokenRepository.findById(id).map(t -> {
-            t.setIsActive(false);
-            tokenRepository.save(t);
-            return true;
-        }).orElse(false);
+    public boolean revokeToken(Long id, String requesterRawToken) {
+        Token target = tokenRepository.findById(id).orElse(null);
+        if (target == null) {
+            return false;
+        }
+        if (!target.getIsActive()) {
+            return false;
+        }
+
+        Token requester = findByRawToken(requesterRawToken).orElse(null);
+        if (requester == null || !requester.getIsActive()) {
+            return false;
+        }
+
+        if (requester.getId().equals(target.getId())) {
+            throw new IllegalArgumentException("Cannot revoke your own token");
+        }
+
+        if (!"ADMIN".equalsIgnoreCase(requester.getRole())) {
+            throw new IllegalArgumentException("Only admin tokens can revoke other tokens");
+        }
+
+        if ("ADMIN".equalsIgnoreCase(target.getRole())) {
+            long adminCount = tokenRepository.countByIsActiveTrueAndRole("ADMIN");
+            if (adminCount <= 1) {
+                throw new IllegalArgumentException("Cannot revoke the last admin token");
+            }
+        }
+
+        target.setIsActive(false);
+        tokenRepository.save(target);
+        return true;
     }
 
     public boolean hasAnyToken() {

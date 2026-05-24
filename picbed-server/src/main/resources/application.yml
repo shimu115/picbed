@@ -5,7 +5,7 @@ spring:
   application:
     name: picbed-server
   datasource:
-    url: jdbc:h2:file:./data/picbed;DB_CLOSE_DELAY=-1;MODE=MySQL
+    url: jdbc:h2:file:./data/picbed;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE;MODE=MySQL
     driver-class-name: org.h2.Driver
     username: picbed
     password: picbed
