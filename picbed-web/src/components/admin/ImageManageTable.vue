@@ -1,6 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useTokenStore } from '@/stores/token'
 import { getPublicImages, deleteImage, batchDeleteImages } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -11,6 +12,12 @@ const selection = ref([])
 const total = ref(0)
 const page = ref(0)
 const pageSize = ref(20)
+const selectMode = ref(false)
+
+const selectedIds = computed(() => new Set(selection.value.map(i => i.id)))
+const allSelected = computed(() =>
+  images.value.length > 0 && selection.value.length === images.value.length
+)
 
 async function loadImages() {
   loading.value = true
@@ -23,32 +30,87 @@ async function loadImages() {
   }
 }
 
+function enterSelectMode(img) {
+  selectMode.value = true
+  toggleSelect(img)
+}
+
+function toggleSelect(img) {
+  const idx = selection.value.findIndex(i => i.id === img.id)
+  if (idx >= 0) {
+    selection.value.splice(idx, 1)
+    if (selection.value.length === 0) {
+      selectMode.value = false
+    }
+  } else {
+    selection.value.push(img)
+  }
+}
+
+function toggleSelectAll() {
+  if (allSelected.value) {
+    selection.value = []
+    selectMode.value = false
+  } else {
+    selection.value = images.value.slice()
+  }
+}
+
+function exitSelectMode() {
+  selectMode.value = false
+  selection.value = []
+}
+
 async function handleDelete(img) {
+  let confirmed = false
   try {
     await ElMessageBox.confirm(
       t('manage.deleteConfirm', { name: img.filename }),
       t('common.confirm'),
       { type: 'warning' }
     )
+    confirmed = true
+  } catch {
+    return // user cancelled
+  }
+  try {
     await deleteImage(img.id)
     ElMessage.success(t('manage.deleteSuccess'))
+    selection.value = selection.value.filter(i => i.id !== img.id)
     await loadImages()
-  } catch { /* cancelled */ }
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
+    if (e.response?.status === 401) {
+      useTokenStore().clearToken()
+    }
+  }
 }
 
 async function handleBatchDelete() {
+  let confirmed = false
   try {
     await ElMessageBox.confirm(
       t('manage.batchDeleteConfirm', { count: selection.value.length }),
       t('common.confirm'),
       { type: 'warning' }
     )
+    confirmed = true
+  } catch {
+    return
+  }
+  try {
     const ids = selection.value.map(i => i.id)
     await batchDeleteImages(ids)
     ElMessage.success(t('manage.batchDeleteSuccess', { count: ids.length }))
     selection.value = []
+    selectMode.value = false
     await loadImages()
-  } catch { /* cancelled */ }
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
+    if (e.response?.status === 401) {
+      useTokenStore().clearToken()
+    }
+  }
 }
 
 function handlePageChange(p) {
@@ -89,7 +151,17 @@ onMounted(loadImages)
 
 <template>
   <div class="image-table">
-    <div class="table-actions">
+    <!-- selection mode bar (mobile) -->
+    <div v-if="selectMode" class="select-bar mobile-only">
+      <el-button size="small" text @click="exitSelectMode">{{ t('common.cancel') }}</el-button>
+      <span class="select-count">{{ t('manage.deleteSelected', { count: selection.length }) }}</span>
+      <el-button size="small" text @click="toggleSelectAll">
+        {{ allSelected ? t('manage.deselectAll') : t('manage.selectAll') }}
+      </el-button>
+    </div>
+
+    <!-- Desktop: batch delete button -->
+    <div class="table-actions desktop-only">
       <el-button
         type="danger"
         size="small"
@@ -139,8 +211,13 @@ onMounted(loadImages)
       <div
         v-for="img in images"
         :key="img.id"
-        class="image-card-mobile"
+        :class="['image-card-mobile', { selected: selectedIds.has(img.id) }]"
+        @contextmenu.prevent="enterSelectMode(img)"
+        @click="selectMode ? toggleSelect(img) : null"
       >
+        <div v-if="selectMode" class="card-check">
+          <el-checkbox :model-value="selectedIds.has(img.id)" @click.stop="toggleSelect(img)" />
+        </div>
         <img :src="img.ossUrl" class="card-thumb" />
         <div class="card-body">
           <div class="card-filename">{{ img.filename }}</div>
@@ -149,13 +226,22 @@ onMounted(loadImages)
             <span>{{ fileSizeLabel(img.fileSize) }}</span>
           </div>
           <div class="card-date">{{ formatDate(img.createdAt) }}</div>
-          <div class="card-actions">
+          <div v-if="!selectMode" class="card-actions">
             <el-button size="small" @click="copyUrl(img.ossUrl)">{{ t('manage.copyUrl') }}</el-button>
             <el-button size="small" type="danger" plain @click="handleDelete(img)">{{ t('manage.delete') }}</el-button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Mobile: floating batch delete button -->
+    <transition name="float-fade">
+      <div v-if="selectMode && selection.length > 0" class="float-delete-bar mobile-only">
+        <el-button type="danger" round @click="handleBatchDelete">
+          {{ t('manage.deleteSelected', { count: selection.length }) }}
+        </el-button>
+      </div>
+    </transition>
 
     <el-pagination
       v-if="total > pageSize"
@@ -181,65 +267,116 @@ onMounted(loadImages)
   justify-content: flex-end;
 }
 
+/* Responsive visibility */
 .desktop-table { display: block; }
+.desktop-only { display: block; }
 .mobile-cards { display: none; }
+.mobile-only { display: none; }
 
 @media (max-width: 767px) {
   .desktop-table { display: none; }
+  .desktop-only { display: none; }
   .mobile-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  .mobile-only { display: block; }
+}
 
-  .image-card-mobile {
-    display: flex;
-    gap: 12px;
-    background: #fff;
-    border-radius: 8px;
-    padding: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
-  .card-thumb {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 6px;
-    flex-shrink: 0;
-  }
-  .card-body {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .card-filename {
-    font-size: 14px;
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .card-meta {
-    font-size: 12px;
-    color: #909399;
-    display: flex;
-    gap: 12px;
-  }
-  .card-date {
-    font-size: 11px;
-    color: #c0c4cc;
-  }
-  .card-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 4px;
-  }
-  .card-actions .el-button {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
-  .card-loading {
-    padding: 12px;
-    background: #fff;
-    border-radius: 8px;
-  }
+/* Select bar */
+.select-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #ecf5ff;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.select-count {
+  font-size: 14px;
+  color: #303133;
+  font-weight: 500;
+}
+
+/* Mobile card */
+.image-card-mobile {
+  display: flex;
+  gap: 12px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  position: relative;
+  transition: background 0.2s;
+}
+.image-card-mobile.selected {
+  background: #ecf5ff;
+  box-shadow: 0 0 0 2px #409eff inset;
+}
+.card-check {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.card-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.card-filename {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-meta {
+  font-size: 12px;
+  color: #909399;
+  display: flex;
+  gap: 12px;
+}
+.card-date {
+  font-size: 11px;
+  color: #c0c4cc;
+}
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.card-actions .el-button {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.card-loading {
+  padding: 12px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+/* Floating delete bar */
+.float-delete-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+.float-fade-enter-active,
+.float-fade-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+.float-fade-enter-from,
+.float-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(12px);
 }
 </style>

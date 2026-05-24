@@ -45,12 +45,23 @@ async function handleDelete(img) {
     ElMessage.warning(t('token.missingToken'))
     return
   }
+  let confirmed = false
   try {
     await ElMessageBox.confirm(t('gallery.deleteConfirm', { name: img.filename }), t('common.confirm'), { type: 'warning' })
+    confirmed = true
+  } catch {
+    return
+  }
+  try {
     await deleteImage(img.id)
     ElMessage.success(t('gallery.deleteSuccess'))
     await loadImages()
-  } catch { }
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
+    if (e.response?.status === 401) {
+      tokenStore.clearToken()
+    }
+  }
 }
 
 function handleLoadMore() {

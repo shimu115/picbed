@@ -77,6 +77,8 @@
     "tokens": "Tokens",
     "images": "Images",
     "deleteSelected": "Delete Selected ({count})",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
     "batchDeleteConfirm": "Delete {count} selected images?",
     "batchDeleteSuccess": "Deleted {count} images",
     "preview": "Preview",

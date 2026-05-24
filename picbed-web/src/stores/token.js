@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { verifyToken } from '@/api'
 
 export const useTokenStore = defineStore('token', () => {
   const token = ref(localStorage.getItem('auth_token') || '')
   const role = ref('')
   const isValid = ref(false)
+  const router = useRouter()
 
   const hasToken = computed(() => token.value.length > 0)
   const isAdmin = computed(() => role.value === 'ADMIN')
@@ -38,11 +40,18 @@ export const useTokenStore = defineStore('token', () => {
     isValid.value = false
     role.value = ''
     localStorage.removeItem('auth_token')
+    if (router.currentRoute?.value?.meta?.requiresToken) {
+      router.push('/')
+    }
   }
 
   if (hasToken.value) {
     validateToken()
   }
+
+  window.addEventListener('auth-token-expired', () => {
+    clearToken()
+  })
 
   return { token, role, isValid, hasToken, isAdmin, setToken, clearToken, validateToken }
 })

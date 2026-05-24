@@ -77,6 +77,8 @@
     "tokens": "Token 管理",
     "images": "图片管理",
     "deleteSelected": "批量删除 ({count})",
+    "selectAll": "全选",
+    "deselectAll": "取消全选",
     "batchDeleteConfirm": "确定要删除选中的 {count} 张图片吗？",
     "batchDeleteSuccess": "已删除 {count} 张图片",
     "preview": "预览",
