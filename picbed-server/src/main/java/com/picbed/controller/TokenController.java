@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@RestController
 @Slf4j
+@RestController
 public class TokenController {
 
     @Autowired
@@ -35,21 +35,24 @@ public class TokenController {
             @Valid @RequestBody TokenCreateRequest request) {
 
         if (masterToken == null || masterToken.isBlank()) {
+            log.warn("Setup failed: missing master token header");
             return ResponseEntity.status(401)
                     .body(Result.error("Missing X-Setup-Token header", 401));
         }
 
         if (!setupTokenManager.validate(masterToken)) {
+            log.warn("Setup failed: invalid master token provided");
             return ResponseEntity.status(401)
                     .body(Result.error("Invalid setup token", 401));
         }
 
         if (tokenService.hasAnyToken()) {
+            log.warn("Setup rejected: tokens already exist");
             return ResponseEntity.badRequest()
                     .body(Result.error("Tokens already exist, use admin API to create more", 400));
         }
 
-        log.info("Creating initial admin token for {}", request.getName());
+        log.info("Creating initial admin token for '{}'", request.getName());
         return ResponseEntity.ok(Result.success(tokenService.createToken(request.getName(), "ADMIN")));
     }
 
@@ -58,6 +61,7 @@ public class TokenController {
             @RequestHeader("X-Auth-Token") String authToken) {
         Token requester = tokenService.findByRawToken(authToken).orElse(null);
         if (requester == null || !"ADMIN".equalsIgnoreCase(requester.getRole())) {
+            log.warn("Token list rejected: requester has no admin role");
             return ResponseEntity.status(403)
                     .body(Result.error("Admin role required", 403));
         }
@@ -70,6 +74,7 @@ public class TokenController {
             @Valid @RequestBody TokenCreateRequest request) {
         Token requester = tokenService.findByRawToken(authToken).orElse(null);
         if (requester == null || !"ADMIN".equalsIgnoreCase(requester.getRole())) {
+            log.warn("Token creation rejected: requester has no admin role");
             return ResponseEntity.status(403)
                     .body(Result.error("Admin role required", 403));
         }

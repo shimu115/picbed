@@ -6,6 +6,7 @@ import com.picbed.dto.Result;
 import com.picbed.entity.ImageInfo;
 import com.picbed.service.ImageService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 public class ImageController {
 

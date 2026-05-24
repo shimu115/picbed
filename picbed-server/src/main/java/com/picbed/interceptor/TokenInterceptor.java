@@ -4,9 +4,11 @@ import com.picbed.exception.UnauthorizedException;
 import com.picbed.service.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+@Slf4j
 @Component
 public class TokenInterceptor implements HandlerInterceptor {
 
@@ -27,10 +29,12 @@ public class TokenInterceptor implements HandlerInterceptor {
 
         String token = request.getHeader(AUTH_HEADER);
         if (token == null || token.isBlank()) {
+            log.warn("Missing X-Auth-Token from {} to {}", request.getRemoteAddr(), request.getRequestURI());
             throw new UnauthorizedException("Missing X-Auth-Token header");
         }
 
         if (!tokenService.validateToken(token)) {
+            log.warn("Invalid/expired token from {} to {}", request.getRemoteAddr(), request.getRequestURI());
             throw new UnauthorizedException("Invalid or expired token");
         }
 

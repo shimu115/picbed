@@ -3,6 +3,7 @@ package com.picbed.service;
 import com.picbed.entity.Token;
 import com.picbed.repository.TokenRepository;
 import com.picbed.util.TokenUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class TokenService {
 
@@ -33,6 +35,8 @@ public class TokenService {
         token.setRole(resolvedRole);
         token.setIsActive(true);
         tokenRepository.save(token);
+
+        log.info("Created {} token '{}' (id={})", resolvedRole, name, token.getId());
 
         Map<String, Object> result = new HashMap<>();
         result.put("id", token.getId());
@@ -79,9 +83,11 @@ public class TokenService {
     public boolean revokeToken(Long id, String requesterRawToken) {
         Token target = tokenRepository.findById(id).orElse(null);
         if (target == null) {
+            log.warn("Revoke failed: target token id={} not found", id);
             return false;
         }
         if (!target.getIsActive()) {
+            log.warn("Revoke failed: target token '{}' (id={}) already revoked", target.getName(), id);
             return false;
         }
 
@@ -91,22 +97,27 @@ public class TokenService {
         }
 
         if (requester.getId().equals(target.getId())) {
+            log.warn("Revoke rejected: token '{}' (id={}) attempted to revoke itself", requester.getName(), requester.getId());
             throw new IllegalArgumentException("Cannot revoke your own token");
         }
 
         if (!"ADMIN".equalsIgnoreCase(requester.getRole())) {
+            log.warn("Revoke rejected: non-admin token '{}' (id={}) attempted to revoke '{}' (id={})",
+                    requester.getName(), requester.getId(), target.getName(), target.getId());
             throw new IllegalArgumentException("Only admin tokens can revoke other tokens");
         }
 
         if ("ADMIN".equalsIgnoreCase(target.getRole())) {
             long adminCount = tokenRepository.countByIsActiveTrueAndRole("ADMIN");
             if (adminCount <= 1) {
+                log.warn("Revoke rejected: attempt to revoke last admin token '{}' (id={})", target.getName(), id);
                 throw new IllegalArgumentException("Cannot revoke the last admin token");
             }
         }
 
         target.setIsActive(false);
         tokenRepository.save(target);
+        log.info("Revoked {} token '{}' (id={})", target.getRole(), target.getName(), target.getId());
         return true;
     }
 

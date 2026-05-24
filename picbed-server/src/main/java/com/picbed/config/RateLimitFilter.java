@@ -6,12 +6,14 @@ import io.github.bucket4j.Refill;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Component
 public class RateLimitFilter implements Filter {
 
@@ -32,6 +34,7 @@ public class RateLimitFilter implements Filter {
         if (bucket.tryConsume(1)) {
             chain.doFilter(req, res);
         } else {
+            log.warn("Rate limit exceeded for {} to {}", ip, path);
             response.setStatus(429);
             response.setContentType("application/json");
             response.getWriter().write("{\"code\":429,\"message\":\"Too many requests\"}");

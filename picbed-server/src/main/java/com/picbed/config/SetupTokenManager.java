@@ -55,6 +55,10 @@ public class SetupTokenManager {
     }
 
     public boolean validate(String token) {
-        return setupToken != null && setupToken.equals(token);
+        boolean valid = setupToken != null && setupToken.equals(token);
+        if (!valid) {
+            log.warn("Invalid setup token attempt");
+        }
+        return valid;
     }
 }
