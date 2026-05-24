@@ -6,6 +6,7 @@ import { verifyToken } from '@/api'
 export const useTokenStore = defineStore('token', () => {
   const token = ref(localStorage.getItem('auth_token') || '')
   const role = ref('')
+  const tokenId = ref(null)
   const isValid = ref(false)
   const router = useRouter()
 
@@ -22,6 +23,7 @@ export const useTokenStore = defineStore('token', () => {
       const res = await verifyToken()
       isValid.value = res.data?.data?.valid === true
       role.value = res.data?.data?.role || ''
+      tokenId.value = res.data?.data?.id || null
     } catch {
       isValid.value = false
       role.value = ''
@@ -39,6 +41,7 @@ export const useTokenStore = defineStore('token', () => {
     token.value = ''
     isValid.value = false
     role.value = ''
+    tokenId.value = null
     localStorage.removeItem('auth_token')
     if (router.currentRoute?.value?.meta?.requiresToken) {
       router.push('/')
@@ -53,5 +56,5 @@ export const useTokenStore = defineStore('token', () => {
     clearToken()
   })
 
-  return { token, role, isValid, hasToken, isAdmin, setToken, clearToken, validateToken }
+  return { token, role, tokenId, isValid, hasToken, isAdmin, setToken, clearToken, validateToken }
 })

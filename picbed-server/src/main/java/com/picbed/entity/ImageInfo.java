@@ -46,6 +46,9 @@ public class ImageInfo {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Transient
+    private String uploadedBy;
+
     @PrePersist
     public void prePersist() {
         if (createdAt == null) {

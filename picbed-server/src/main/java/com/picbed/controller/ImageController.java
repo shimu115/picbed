@@ -75,8 +75,16 @@ public class ImageController {
             @Valid @RequestBody BatchPublishRequest req,
             HttpServletRequest httpRequest) {
         String tokenRole = (String) httpRequest.getAttribute("tokenRole");
-        if (!"ADMIN".equalsIgnoreCase(tokenRole)) {
-            Long tokenId = (Long) httpRequest.getAttribute("tokenId");
+        Long tokenId = (Long) httpRequest.getAttribute("tokenId");
+
+        if ("ADMIN".equalsIgnoreCase(tokenRole)) {
+            // Admin can unpublish any image, but can only publish their own images
+            if (req.getPublished()) {
+                for (Long id : req.getIds()) {
+                    checkOwnership(id, httpRequest);
+                }
+            }
+        } else {
             for (Long id : req.getIds()) {
                 checkOwnership(id, httpRequest);
             }

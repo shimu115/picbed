@@ -4,8 +4,10 @@ import { useI18n } from 'vue-i18n'
 import { useTokenStore } from '@/stores/token'
 import { getAdminImages, deleteImage, batchDeleteImages, batchPublishImages } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { DocumentCopy } from '@element-plus/icons-vue'
 
 const { t } = useI18n()
+const tokenStore = useTokenStore()
 const images = ref([])
 const loading = ref(false)
 const selection = ref([])
@@ -19,6 +21,12 @@ const selectedIds = computed(() => new Set(selection.value.map(i => i.id)))
 const allSelected = computed(() =>
   images.value.length > 0 && selection.value.length === images.value.length
 )
+
+function canTogglePublish(img) {
+  if (!tokenStore.isAdmin) return true
+  if (img.isPublished) return true
+  return img.tokenId === tokenStore.tokenId
+}
 
 async function loadImages() {
   loading.value = true
@@ -87,7 +95,7 @@ async function handleDelete(img) {
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || t('error.serverError'))
     if (e.response?.status === 401) {
-      useTokenStore().clearToken()
+      tokenStore.clearToken()
     }
   }
 }
@@ -112,7 +120,7 @@ async function handleBatchDelete() {
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || t('error.serverError'))
     if (e.response?.status === 401) {
-      useTokenStore().clearToken()
+      tokenStore.clearToken()
     }
   }
 }
@@ -128,12 +136,13 @@ async function handleBatchPublish(published) {
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || t('error.serverError'))
     if (e.response?.status === 401) {
-      useTokenStore().clearToken()
+      tokenStore.clearToken()
     }
   }
 }
 
 async function handleTogglePublish(img) {
+  if (!canTogglePublish(img)) return
   const newVal = !img.isPublished
   try {
     await batchPublishImages([img.id], newVal)
@@ -142,7 +151,7 @@ async function handleTogglePublish(img) {
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || t('error.serverError'))
     if (e.response?.status === 401) {
-      useTokenStore().clearToken()
+      tokenStore.clearToken()
     }
   }
 }
@@ -228,7 +237,7 @@ onMounted(loadImages)
     <!-- selection mode bar (mobile) -->
     <div v-if="selectMode" class="select-bar mobile-only">
       <el-button size="small" text @click="exitSelectMode">{{ t('common.cancel') }}</el-button>
-      <span class="select-count">{{ selection.length }} {{ t('manage.published') }}</span>
+      <span class="select-count">{{ selection.length }} {{ t('common.confirm') }}</span>
       <el-button size="small" text @click="toggleSelectAll">
         {{ allSelected ? t('manage.deselectAll') : t('manage.selectAll') }}
       </el-button>
@@ -248,18 +257,20 @@ onMounted(loadImages)
             <img :src="row.ossUrl" class="thumb" />
           </template>
         </el-table-column>
-        <el-table-column prop="filename" :label="t('manage.filename')" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="filename" :label="t('manage.filename')" min-width="160" show-overflow-tooltip />
+        <el-table-column prop="uploadedBy" :label="t('token.name')" width="120" show-overflow-tooltip />
         <el-table-column :label="t('manage.published')" width="80" align="center">
           <template #default="{ row }">
             <el-switch
               :model-value="row.isPublished"
+              :disabled="!canTogglePublish(row)"
               size="small"
               @change="handleTogglePublish(row)"
             />
           </template>
         </el-table-column>
-        <el-table-column prop="contentType" :label="t('manage.type')" width="110" />
-        <el-table-column :label="t('manage.size')" width="90">
+        <el-table-column prop="contentType" :label="t('manage.type')" width="100" />
+        <el-table-column :label="t('manage.size')" width="80">
           <template #default="{ row }">{{ fileSizeLabel(row.fileSize) }}</template>
         </el-table-column>
         <el-table-column :label="t('manage.created')" width="160">
@@ -267,8 +278,10 @@ onMounted(loadImages)
         </el-table-column>
         <el-table-column :label="t('manage.actions')" width="160" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" text @click="copyUrl(row.ossUrl)">{{ t('manage.copyUrl') }}</el-button>
-            <el-button size="small" text type="danger" @click="handleDelete(row)">{{ t('manage.delete') }}</el-button>
+            <el-button size="small" @click="copyUrl(row.ossUrl)" plain>
+              <el-icon><DocumentCopy /></el-icon>
+            </el-button>
+            <el-button size="small" type="danger" text @click="handleDelete(row)">{{ t('manage.delete') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -295,8 +308,10 @@ onMounted(loadImages)
           <div class="card-meta">
             <span>{{ img.contentType }}</span>
             <span>{{ fileSizeLabel(img.fileSize) }}</span>
+            <span v-if="img.uploadedBy" class="card-uploader">{{ img.uploadedBy }}</span>
             <el-switch
               :model-value="img.isPublished"
+              :disabled="!canTogglePublish(img)"
               size="small"
               @click.stop
               @change="handleTogglePublish(img)"
@@ -304,7 +319,9 @@ onMounted(loadImages)
           </div>
           <div class="card-date">{{ formatDate(img.createdAt) }}</div>
           <div v-if="!selectMode" class="card-actions">
-            <el-button size="small" @click="copyUrl(img.ossUrl)">{{ t('manage.copyUrl') }}</el-button>
+            <el-button type="primary" size="small" @click="copyUrl(img.ossUrl)" plain>
+              <el-icon><DocumentCopy /></el-icon>
+            </el-button>
             <el-button size="small" type="danger" plain @click="handleDelete(img)">{{ t('manage.delete') }}</el-button>
           </div>
         </div>
@@ -435,6 +452,11 @@ onMounted(loadImages)
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
+}
+.card-uploader {
+  color: #409eff;
+  font-weight: 500;
 }
 .card-date {
   font-size: 11px;

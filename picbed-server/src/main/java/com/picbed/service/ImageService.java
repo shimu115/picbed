@@ -2,18 +2,21 @@ package com.picbed.service;
 
 import com.picbed.dto.ImageSaveRequest;
 import com.picbed.entity.ImageInfo;
+import com.picbed.entity.Token;
 import com.picbed.exception.NotFoundException;
 import com.picbed.exception.OssOperationException;
 import com.picbed.repository.ImageRepository;
+import com.picbed.repository.TokenRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -21,6 +24,8 @@ public class ImageService {
 
     @Autowired
     private ImageRepository imageRepository;
+    @Autowired
+    private TokenRepository tokenRepository;
     @Autowired
     private OssService ossService;
 
@@ -44,22 +49,42 @@ public class ImageService {
     }
 
     public Page<ImageInfo> listPublishedImages(int page, int size) {
-        return imageRepository.findByIsPublishedOrderByCreatedAtDesc(true,
+        Page<ImageInfo> result = imageRepository.findByIsPublishedOrderByCreatedAtDesc(true,
                 PageRequest.of(page, size));
+        populateUploadedBy(result.getContent());
+        return result;
     }
 
     public Page<ImageInfo> listImagesByOwner(int page, int size, Long tokenId, String role, Boolean published) {
         PageRequest pageRequest = PageRequest.of(page, size);
+        Page<ImageInfo> result;
         if ("ADMIN".equalsIgnoreCase(role)) {
             if (published != null) {
-                return imageRepository.findByIsPublishedOrderByCreatedAtDesc(published, pageRequest);
+                result = imageRepository.findByIsPublishedOrderByCreatedAtDesc(published, pageRequest);
+            } else {
+                result = imageRepository.findAllByOrderByCreatedAtDesc(pageRequest);
             }
-            return imageRepository.findAllByOrderByCreatedAtDesc(pageRequest);
+        } else {
+            if (published != null) {
+                result = imageRepository.findByTokenIdAndIsPublishedOrderByCreatedAtDesc(tokenId, published, pageRequest);
+            } else {
+                result = imageRepository.findByTokenIdOrderByCreatedAtDesc(tokenId, pageRequest);
+            }
         }
-        if (published != null) {
-            return imageRepository.findByTokenIdAndIsPublishedOrderByCreatedAtDesc(tokenId, published, pageRequest);
+        populateUploadedBy(result.getContent());
+        return result;
+    }
+
+    private void populateUploadedBy(List<ImageInfo> images) {
+        List<Long> tokenIds = images.stream()
+                .map(ImageInfo::getTokenId)
+                .distinct()
+                .toList();
+        Map<Long, String> nameMap = tokenRepository.findAllById(tokenIds).stream()
+                .collect(Collectors.toMap(Token::getId, Token::getName));
+        for (ImageInfo img : images) {
+            img.setUploadedBy(nameMap.getOrDefault(img.getTokenId(), ""));
         }
-        return imageRepository.findByTokenIdOrderByCreatedAtDesc(tokenId, pageRequest);
     }
 
     public java.util.Optional<ImageInfo> findByMd5Hash(String md5Hash) {
