@@ -13,12 +13,13 @@ const { t, locale } = useI18n()
 const drawerVisible = ref(false)
 
 const navItems = [
-  { path: '/', label: 'nav.gallery', requiresToken: false },
-  { path: '/upload', label: 'nav.upload', requiresToken: true },
-  { path: '/manage', label: 'nav.manage', requiresToken: true }
+  { path: '/', label: 'nav.gallery', requiresToken: false, isActive: false },
+  { path: '/upload', label: 'nav.upload', requiresToken: true, isActive: false },
+  { path: '/manage', label: 'nav.manage', requiresToken: true, isActive: false }
 ]
 
 function goTo(path) {
+  navItems.forEach(item => item.isActive = item.path === path)
   drawerVisible.value = false
   router.push(path)
 }
@@ -76,11 +77,21 @@ function toggleLang() {
         <img src="/favicon.svg" alt="PicBed" class="logo-icon" />
         <span class="logo-text">{{ t('common.appName') }}</span>
       </div>
-      <div class="drawer-nav">
+      <div class="drawer-nav" v-for="item in navItems">
         <el-button
-          v-for="item in navItems"
-          :key="item.path"
           text
+          v-if="!item.isActive"
+          size="default"
+          :class="{ 'nav-active': $route.path === item.path }"
+          @click="goTo(item.path)"
+          :disabled="item.requiresToken && !tokenStore.hasToken && $route.path !== item.path"
+        >
+          {{ t(item.label) }}
+        </el-button>
+        <el-button
+          v-else
+          text bg
+          color=""
           size="default"
           :class="{ 'nav-active': $route.path === item.path }"
           class="drawer-nav-btn"
@@ -89,6 +100,18 @@ function toggleLang() {
         >
           {{ t(item.label) }}
         </el-button>
+<!--        <el-button-->
+<!--          v-for="item in navItems"-->
+<!--          :key="item.path"-->
+<!--          text-->
+<!--          size="default"-->
+<!--          :class="{ 'nav-active': $route.path === item.path }"-->
+<!--          class="drawer-nav-btn"-->
+<!--          @click="goTo(item.path)"-->
+<!--          :disabled="item.requiresToken && !tokenStore.hasToken && $route.path !== item.path"-->
+<!--        >-->
+<!--          {{ t(item.label) }}-->
+<!--        </el-button>-->
       </div>
       <div class="drawer-token">
         <TokenInput />
@@ -169,9 +192,15 @@ function toggleLang() {
   .header-left {
     gap: 8px;
   }
-  .desktop-nav { display: none; }
-  .desktop-right { display: none; }
-  .mobile-right { display: flex; }
+  .desktop-nav {
+    display: none;
+  }
+  .desktop-right {
+    display: none;
+  }
+  .mobile-right {
+    display: flex;
+  }
   .logo-text {
     font-size: 16px;
   }
@@ -202,7 +231,8 @@ function toggleLang() {
 }
 .drawer-nav-btn {
   width: 100%;
-  justify-content: flex-start;
+  //justify-content: flex-start;
+  justify-content: center;
   height: 40px;
   font-size: 15px;
   border-radius: 8px;
@@ -212,6 +242,7 @@ function toggleLang() {
   color: #409eff !important;
   background: #ecf5ff !important;
   font-weight: 600;
+
 }
 .drawer-token {
   padding-top: 12px;
