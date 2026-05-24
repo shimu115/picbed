@@ -2,6 +2,7 @@ package com.picbed.controller;
 
 import com.picbed.dto.BatchDeleteRequest;
 import com.picbed.dto.BatchPublishRequest;
+import com.picbed.dto.ImageDTO;
 import com.picbed.dto.ImageSaveRequest;
 import com.picbed.dto.Result;
 import com.picbed.entity.ImageInfo;
@@ -29,7 +30,7 @@ public class ImageController {
     public ResponseEntity<Result<Map<String, Object>>> listImages(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Page<ImageInfo> result = imageService.listPublishedImages(page, size);
+        Page<ImageDTO> result = imageService.listPublishedImages(page, size);
         return ResponseEntity.ok(Result.success(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),
@@ -52,7 +53,7 @@ public class ImageController {
             HttpServletRequest request) {
         Long tokenId = (Long) request.getAttribute("tokenId");
         String tokenRole = (String) request.getAttribute("tokenRole");
-        Page<ImageInfo> result = imageService.listImagesByOwner(page, size, tokenId, tokenRole, published);
+        Page<ImageDTO> result = imageService.listImagesByOwner(page, size, tokenId, tokenRole, published);
         return ResponseEntity.ok(Result.success(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),

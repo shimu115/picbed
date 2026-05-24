@@ -1,5 +1,6 @@
 package com.picbed.service;
 
+import com.picbed.dto.ImageDTO;
 import com.picbed.dto.ImageSaveRequest;
 import com.picbed.entity.ImageInfo;
 import com.picbed.entity.Token;
@@ -10,6 +11,7 @@ import com.picbed.repository.TokenRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,14 +50,13 @@ public class ImageService {
         return saved;
     }
 
-    public Page<ImageInfo> listPublishedImages(int page, int size) {
+    public Page<ImageDTO> listPublishedImages(int page, int size) {
         Page<ImageInfo> result = imageRepository.findByIsPublishedOrderByCreatedAtDesc(true,
                 PageRequest.of(page, size));
-        populateUploadedBy(result.getContent());
-        return result;
+        return toDtoPage(result);
     }
 
-    public Page<ImageInfo> listImagesByOwner(int page, int size, Long tokenId, String role, Boolean published) {
+    public Page<ImageDTO> listImagesByOwner(int page, int size, Long tokenId, String role, Boolean published) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<ImageInfo> result;
         if ("ADMIN".equalsIgnoreCase(role)) {
@@ -71,20 +72,22 @@ public class ImageService {
                 result = imageRepository.findByTokenIdOrderByCreatedAtDesc(tokenId, pageRequest);
             }
         }
-        populateUploadedBy(result.getContent());
-        return result;
+        return toDtoPage(result);
     }
 
-    private void populateUploadedBy(List<ImageInfo> images) {
+    private Page<ImageDTO> toDtoPage(Page<ImageInfo> page) {
+        List<ImageInfo> images = page.getContent();
         List<Long> tokenIds = images.stream()
                 .map(ImageInfo::getTokenId)
+                .filter(id -> id != null)
                 .distinct()
                 .toList();
         Map<Long, String> nameMap = tokenRepository.findAllById(tokenIds).stream()
                 .collect(Collectors.toMap(Token::getId, Token::getName));
-        for (ImageInfo img : images) {
-            img.setUploadedBy(nameMap.getOrDefault(img.getTokenId(), ""));
-        }
+        List<ImageDTO> dtos = images.stream()
+                .map(img -> ImageDTO.from(img, nameMap.getOrDefault(img.getTokenId(), "")))
+                .toList();
+        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
     }
 
     public java.util.Optional<ImageInfo> findByMd5Hash(String md5Hash) {
