@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface ImageRepository extends JpaRepository<ImageInfo, Long> {
 
     Optional<ImageInfo> findByOssKey(String ossKey);
+
+    Optional<ImageInfo> findByMd5Hash(String md5Hash);
 }

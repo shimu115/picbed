@@ -1,5 +1,37 @@
+import SparkMD5 from 'spark-md5'
 import { getUploadSignature, saveImageMetadata } from '@/api'
 import { useUploadStore } from '@/stores/upload'
+
+function computeMd5(file) {
+  return new Promise((resolve, reject) => {
+    const blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice
+    const chunkSize = 2097152
+    const chunks = Math.ceil(file.size / chunkSize)
+    let currentChunk = 0
+    const spark = new SparkMD5.ArrayBuffer()
+    const fileReader = new FileReader()
+
+    fileReader.onload = (e) => {
+      spark.append(e.target.result)
+      currentChunk++
+      if (currentChunk < chunks) {
+        loadNext()
+      } else {
+        resolve(spark.end())
+      }
+    }
+
+    fileReader.onerror = () => reject(new Error('Failed to read file for MD5 computation'))
+
+    function loadNext() {
+      const start = currentChunk * chunkSize
+      const end = Math.min(start + chunkSize, file.size)
+      fileReader.readAsArrayBuffer(blobSlice.call(file, start, end))
+    }
+
+    loadNext()
+  })
+}
 
 export function useOssUpload() {
   const uploadStore = useUploadStore()
@@ -9,8 +41,17 @@ export function useOssUpload() {
     uploadStore.addFile(uid, file)
 
     try {
-      const sigRes = await getUploadSignature(file.name, file.type || 'application/octet-stream')
-      const { ossKey, uploadUrl, accessUrl } = sigRes.data.data
+      const md5 = await computeMd5(file)
+
+      const sigRes = await getUploadSignature(file.name, file.type || 'application/octet-stream', md5)
+      const data = sigRes.data.data
+
+      if (data.exists) {
+        uploadStore.markSuccess(uid, data.accessUrl)
+        return data.accessUrl
+      }
+
+      const { ossKey, uploadUrl, accessUrl } = data
 
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest()
@@ -40,6 +81,7 @@ export function useOssUpload() {
         ossKey,
         ossUrl: accessUrl,
         contentType: file.type || 'application/octet-stream',
+        md5,
         fileSize: file.size,
         width: null,
         height: null

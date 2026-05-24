@@ -24,7 +24,7 @@ public class OssService {
     @Autowired
     private OssProperties ossProperties;
 
-    public Map<String, Object> generateUploadSignature(String filename, String contentType) {
+    public Map<String, Object> generateUploadSignature(String filename, String contentType, String md5) {
         if (!OssUtil.ImageType.isAllowedContentType(contentType)) {
             log.warn("Upload signature rejected: unsupported content type '{}' for '{}'", contentType, filename);
             throw new IllegalArgumentException(
@@ -32,7 +32,7 @@ public class OssService {
                     + ". Allowed: " + OssUtil.ImageType.allowedContentTypes());
         }
 
-        String ossKey = OssUtil.generateOssKey(filename);
+        String ossKey = OssUtil.generateOssKey(md5, filename);
 
         Date expiration = new Date(System.currentTimeMillis() + Duration.ofMinutes(5).toMillis());
         GeneratePresignedUrlRequest req = new GeneratePresignedUrlRequest(ossProperties.getBucketName(), ossKey);

@@ -17,7 +17,11 @@ CREATE TABLE IF NOT EXISTS images (
     oss_url VARCHAR(2000) NOT NULL,
     content_type VARCHAR(100) NOT NULL,
     file_size BIGINT NOT NULL,
+    md5_hash VARCHAR(32) NULL,
     width INT NULL,
     height INT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE IF EXISTS images ADD COLUMN IF NOT EXISTS md5_hash VARCHAR(32) NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_images_md5_hash ON images(md5_hash);

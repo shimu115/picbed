@@ -31,6 +31,7 @@ public class ImageService {
         info.setOssKey(request.getOssKey());
         info.setOssUrl(request.getOssUrl());
         info.setContentType(request.getContentType());
+        info.setMd5Hash(request.getMd5());
         info.setFileSize(request.getFileSize());
         info.setWidth(request.getWidth());
         info.setHeight(request.getHeight());
@@ -42,6 +43,10 @@ public class ImageService {
     public Page<ImageInfo> listImages(int page, int size) {
         return imageRepository.findAll(
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+    }
+
+    public java.util.Optional<ImageInfo> findByMd5Hash(String md5Hash) {
+        return imageRepository.findByMd5Hash(md5Hash);
     }
 
     public ImageInfo getImage(Long id) {

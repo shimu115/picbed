@@ -25,6 +25,9 @@ public class ImageInfo {
     @Column(name = "content_type", nullable = false, length = 100)
     private String contentType;
 
+    @Column(name = "md5_hash", unique = true, length = 32)
+    private String md5Hash;
+
     @Column(name = "file_size", nullable = false)
     private Long fileSize;
 

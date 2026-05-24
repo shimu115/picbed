@@ -48,8 +48,8 @@ export function setupToken(masterToken, name) {
 }
 
 // Upload
-export function getUploadSignature(filename, contentType) {
-  return api.post('/api/upload/signature', { filename, contentType })
+export function getUploadSignature(filename, contentType, md5) {
+  return api.post('/api/upload/signature', { filename, contentType, md5 })
 }
 
 // Admin - images

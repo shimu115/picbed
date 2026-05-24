@@ -1,10 +1,7 @@
 package com.picbed.util;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public final class OssUtil {
@@ -47,11 +44,20 @@ public final class OssUtil {
         }
     }
 
-    public static String generateOssKey(String originalFilename) {
-        String safeName = sanitizeFilename(originalFilename);
-        String datePrefix = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
-        String uuid = UUID.randomUUID().toString().replace("-", "");
-        return "picbed/" + datePrefix + "/" + uuid + "-" + safeName;
+    public static String generateOssKey(String md5Hash, String originalFilename) {
+        String ext = extractExtension(originalFilename);
+        return "picbed/" + md5Hash + ext;
+    }
+
+    private static String extractExtension(String filename) {
+        if (filename == null || filename.isBlank()) return "";
+        String name = filename.replace("\\", "/");
+        int lastSlash = name.lastIndexOf('/');
+        if (lastSlash >= 0) name = name.substring(lastSlash + 1);
+        int dot = name.lastIndexOf('.');
+        if (dot <= 0) return "";
+        String ext = name.substring(dot).toLowerCase();
+        return ext.length() > 10 ? ext.substring(0, 10) : ext;
     }
 
     public static String getPublicUrl(String bucketName, String endpoint, String customDomain, String ossKey) {

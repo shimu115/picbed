@@ -19,6 +19,10 @@ public class ImageSaveRequest {
     @NotBlank
     private String contentType;
 
+    @NotBlank
+    @Size(min = 32, max = 64)
+    private String md5;
+
     @NotNull
     @Positive
     private Long fileSize;

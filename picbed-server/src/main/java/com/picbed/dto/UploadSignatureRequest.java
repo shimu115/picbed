@@ -14,4 +14,8 @@ public class UploadSignatureRequest {
     @NotBlank
     @Size(max = 100)
     private String contentType;
+
+    @NotBlank
+    @Size(min = 32, max = 64)
+    private String md5;
 }
