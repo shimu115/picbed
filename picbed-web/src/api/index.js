@@ -40,6 +40,10 @@ export function getPublicImage(id) {
   return api.get(`/api/public/images/${id}`)
 }
 
+export function getAdminImage(id) {
+  return api.get(`/api/admin/images/${id}`)
+}
+
 // Setup
 export function setupToken(masterToken, name) {
   return api.post('/api/setup/token', { name }, {

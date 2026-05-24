@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useTokenStore } from '@/stores/token'
 import { getAdminImages, deleteImage, batchDeleteImages, batchPublishImages } from '@/api'
@@ -7,6 +8,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { DocumentCopy } from '@element-plus/icons-vue'
 import ImagePreview from '@/components/gallery/ImagePreview.vue'
 
+const router = useRouter()
 const { t } = useI18n()
 const tokenStore = useTokenStore()
 const images = ref([])
@@ -189,8 +191,12 @@ function fileSizeLabel(bytes) {
 }
 
 function openPreview(img) {
-  previewImage.value = img
-  showPreview.value = true
+  if (window.innerWidth < 768) {
+    router.push('/image/' + img.id)
+  } else {
+    previewImage.value = img
+    showPreview.value = true
+  }
 }
 
 function closePreview() {

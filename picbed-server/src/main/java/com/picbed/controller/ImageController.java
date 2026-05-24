@@ -63,6 +63,11 @@ public class ImageController {
         )));
     }
 
+    @GetMapping("/api/admin/images/{id}")
+    public ResponseEntity<Result<ImageDTO>> getManagedImage(@PathVariable Long id) {
+        return ResponseEntity.ok(Result.success(imageService.getImageDto(id)));
+    }
+
     @PostMapping("/api/admin/images")
     public ResponseEntity<Result<ImageInfo>> saveImage(
             @Valid @RequestBody ImageSaveRequest req,

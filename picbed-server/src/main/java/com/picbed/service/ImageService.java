@@ -99,6 +99,16 @@ public class ImageService {
                 .orElseThrow(() -> new NotFoundException("Image not found: " + id));
     }
 
+    public ImageDTO getImageDto(Long id) {
+        ImageInfo img = getImage(id);
+        String uploadedBy = "";
+        if (img.getTokenId() != null) {
+            uploadedBy = tokenRepository.findById(img.getTokenId())
+                    .map(Token::getName).orElse("");
+        }
+        return ImageDTO.from(img, uploadedBy);
+    }
+
     @Transactional
     public void deleteImage(Long id) {
         ImageInfo info = imageRepository.findById(id)

@@ -25,6 +25,12 @@ const routes = [
     name: 'Setup',
     component: () => import('@/views/SetupView.vue'),
     meta: { title: 'Setup', requiresToken: false }
+  },
+  {
+    path: '/image/:id',
+    name: 'ImageView',
+    component: () => import('@/views/ImageView.vue'),
+    meta: { title: 'Image Detail', requiresToken: false }
   }
 ]
 

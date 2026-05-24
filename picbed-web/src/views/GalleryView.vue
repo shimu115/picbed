@@ -32,8 +32,12 @@ async function loadImages() {
 }
 
 function openPreview(img) {
-  previewImage.value = img
-  showPreview.value = true
+  if (window.innerWidth < 768) {
+    router.push('/image/' + img.id)
+  } else {
+    previewImage.value = img
+    showPreview.value = true
+  }
 }
 
 function closePreview() {
