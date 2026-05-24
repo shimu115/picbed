@@ -1,5 +1,13 @@
 <script setup>
+import { onMounted } from 'vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
+import { useSettingsStore } from '@/stores/settings'
+
+const settingsStore = useSettingsStore()
+
+onMounted(() => {
+  settingsStore.fetchSettings()
+})
 </script>
 
 <template>

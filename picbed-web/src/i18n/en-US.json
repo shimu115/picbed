@@ -104,6 +104,10 @@
     "batchPublish": "Publish ({count})",
     "batchUnpublish": "Unpublish ({count})",
     "batchPublishSuccess": "Updated {count} images",
+    "settings": "Upload Settings",
+    "uploadSizeLimit": "Limit upload file size",
+    "uploadSizeLimitMb": "Max file size",
+    "settingsSaved": "Settings saved",
     "filterAll": "All",
     "filterPublished": "Published",
     "filterUnpublished": "Unpublished"

@@ -1,10 +1,9 @@
 import SparkMD5 from 'spark-md5'
 import { getUploadSignature, saveImageMetadata } from '@/api'
 import { useUploadStore } from '@/stores/upload'
+import { useSettingsStore } from '@/stores/settings'
 import i18n from '@/i18n'
 import { ElMessageBox } from 'element-plus'
-
-const MAX_FILE_SIZE = 50 * 1024 * 1024
 
 function validateFilename(name, maxLen = 64) {
   const dotIndex = name.lastIndexOf('.')
@@ -103,6 +102,7 @@ function computeMd5(file) {
 
 export function useOssUpload() {
   const uploadStore = useUploadStore()
+  const settingsStore = useSettingsStore()
 
   async function uploadFile(file, published = false) {
     const uid = file.uid || Date.now() + '-' + Math.random().toString(36).slice(2)
@@ -111,17 +111,19 @@ export function useOssUpload() {
     try {
       let uploadFileObj = file
 
-      if (file.size > MAX_FILE_SIZE) {
+      const maxBytes = settingsStore.maxUploadBytes
+      if (maxBytes && file.size > maxBytes) {
+        const limitMb = settingsStore.uploadSizeLimitMb
         try {
           await ElMessageBox.confirm(
-            i18n.global.t('upload.fileTooLarge', { max: 50 }),
+            i18n.global.t('upload.fileTooLarge', { max: limitMb }),
             i18n.global.t('common.confirm'),
             { type: 'warning', confirmButtonText: i18n.global.t('common.yes'), cancelButtonText: i18n.global.t('common.no') }
           )
           uploadFileObj = await compressImage(file)
           uploadStore.updateFile(uid, uploadFileObj)
         } catch {
-          throw new Error(i18n.global.t('upload.fileTooLargeRejected', { max: 50 }))
+          throw new Error(i18n.global.t('upload.fileTooLargeRejected', { max: limitMb }))
         }
       }
 

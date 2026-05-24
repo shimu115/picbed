@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { useTokenStore } from '@/stores/token'
 import TokenManagePanel from '@/components/admin/TokenManagePanel.vue'
 import ImageManageTable from '@/components/admin/ImageManageTable.vue'
+import SettingsPanel from '@/components/admin/SettingsPanel.vue'
 
 const { t } = useI18n()
 const tokenStore = useTokenStore()
@@ -11,6 +12,11 @@ const tokenStore = useTokenStore()
 <template>
   <div class="management-page">
     <h2>{{ t('manage.title') }}</h2>
+
+    <div v-if="tokenStore.isAdmin" class="management-section">
+      <h3>{{ t('manage.settings') }}</h3>
+      <SettingsPanel />
+    </div>
 
     <div v-if="tokenStore.isAdmin" class="management-section">
       <h3>{{ t('manage.tokens') }}</h3>

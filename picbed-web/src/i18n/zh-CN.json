@@ -104,6 +104,10 @@
     "batchPublish": "批量展示 ({count})",
     "batchUnpublish": "批量取消展示 ({count})",
     "batchPublishSuccess": "已更新 {count} 张图片",
+    "settings": "上传设置",
+    "uploadSizeLimit": "限制上传文件大小",
+    "uploadSizeLimitMb": "最大文件大小",
+    "settingsSaved": "设置已保存",
     "filterAll": "全部",
     "filterPublished": "已展示",
     "filterUnpublished": "未展示"

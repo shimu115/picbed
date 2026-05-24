@@ -30,9 +30,16 @@ public class ImageService {
     private TokenRepository tokenRepository;
     @Autowired
     private OssService ossService;
+    @Autowired
+    private SettingService settingService;
 
     @Transactional
     public ImageInfo saveImage(ImageSaveRequest request, Long tokenId) {
+        if (settingService.isSizeLimitEnabled() && request.getFileSize() > settingService.getMaxSizeBytes()) {
+            long limitMb = settingService.getMaxSizeBytes() / (1024 * 1024);
+            throw new IllegalArgumentException("File size exceeds the limit of " + limitMb + " MB");
+        }
+
         ImageInfo info = new ImageInfo();
         info.setFilename(request.getFilename());
         info.setOssKey(request.getOssKey());

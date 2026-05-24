@@ -79,6 +79,15 @@ export function batchDeleteImages(ids) {
   return api.delete('/api/admin/images/batch', { data: { ids } })
 }
 
+// Settings
+export function getSettings() {
+  return api.get('/api/settings')
+}
+
+export function updateSettings(data) {
+  return api.put('/api/admin/settings', data)
+}
+
 // Verify
 export function verifyToken() {
   return api.get('/api/verify')

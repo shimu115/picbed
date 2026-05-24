@@ -29,3 +29,14 @@ ALTER TABLE IF EXISTS images ADD COLUMN IF NOT EXISTS md5_hash VARCHAR(32) NULL;
 ALTER TABLE IF EXISTS images ADD COLUMN IF NOT EXISTS token_id BIGINT NULL;
 ALTER TABLE IF EXISTS images ADD COLUMN IF NOT EXISTS is_published BOOLEAN NOT NULL DEFAULT FALSE;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_images_md5_hash ON images(md5_hash);
+
+CREATE TABLE IF NOT EXISTS app_settings (
+    id BIGINT NOT NULL DEFAULT 1,
+    upload_size_limit_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    upload_size_limit_mb INT NOT NULL DEFAULT 50,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(id)
+);
+
+MERGE INTO app_settings (id, upload_size_limit_enabled, upload_size_limit_mb, updated_at)
+    KEY(id) VALUES (1, FALSE, 50, CURRENT_TIMESTAMP);
