@@ -2,6 +2,9 @@ import SparkMD5 from 'spark-md5'
 import { getUploadSignature, saveImageMetadata } from '@/api'
 import { useUploadStore } from '@/stores/upload'
 import i18n from '@/i18n'
+import { ElMessageBox } from 'element-plus'
+
+const MAX_FILE_SIZE = 50 * 1024 * 1024
 
 function validateFilename(name, maxLen = 64) {
   const dotIndex = name.lastIndexOf('.')
@@ -9,6 +12,42 @@ function validateFilename(name, maxLen = 64) {
   if (base.length > maxLen) {
     throw new Error(i18n.global.t('upload.filenameTooLong', { max: maxLen }))
   }
+}
+
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      let { naturalWidth: w, naturalHeight: h } = img
+      const maxDim = 4096
+      if (w > maxDim || h > maxDim) {
+        const ratio = Math.min(maxDim / w, maxDim / h)
+        w = Math.round(w * ratio)
+        h = Math.round(h * ratio)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, w, h)
+      const mimeType = file.type === 'image/jpeg' || file.type === 'image/webp'
+        ? file.type : 'image/jpeg'
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(new File([blob], file.name, { type: mimeType, lastModified: Date.now() }))
+        } else {
+          reject(new Error(i18n.global.t('upload.compressFailed')))
+        }
+      }, mimeType, 0.7)
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error(i18n.global.t('upload.compressFailed')))
+    }
+    img.src = url
+  })
 }
 
 function getImageDimensions(file) {
@@ -70,11 +109,27 @@ export function useOssUpload() {
     uploadStore.addFile(uid, file)
 
     try {
-      validateFilename(file.name)
+      let uploadFileObj = file
 
-      const [md5, dims] = await Promise.all([computeMd5(file), getImageDimensions(file)])
+      if (file.size > MAX_FILE_SIZE) {
+        try {
+          await ElMessageBox.confirm(
+            i18n.global.t('upload.fileTooLarge', { max: 50 }),
+            i18n.global.t('common.confirm'),
+            { type: 'warning', confirmButtonText: i18n.global.t('common.yes'), cancelButtonText: i18n.global.t('common.no') }
+          )
+          uploadFileObj = await compressImage(file)
+          uploadStore.updateFile(uid, uploadFileObj)
+        } catch {
+          throw new Error(i18n.global.t('upload.fileTooLargeRejected', { max: 50 }))
+        }
+      }
 
-      const sigRes = await getUploadSignature(file.name, file.type || 'application/octet-stream', md5)
+      validateFilename(uploadFileObj.name)
+
+      const [md5, dims] = await Promise.all([computeMd5(uploadFileObj), getImageDimensions(uploadFileObj)])
+
+      const sigRes = await getUploadSignature(uploadFileObj.name, uploadFileObj.type || 'application/octet-stream', md5)
       const data = sigRes.data.data
 
       if (data.exists) {
@@ -87,7 +142,7 @@ export function useOssUpload() {
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest()
         xhr.open('PUT', uploadUrl)
-        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream')
+        xhr.setRequestHeader('Content-Type', uploadFileObj.type || 'application/octet-stream')
 
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable) {
@@ -104,16 +159,16 @@ export function useOssUpload() {
         }
 
         xhr.onerror = () => reject(new Error('Network error during upload'))
-        xhr.send(file)
+        xhr.send(uploadFileObj)
       })
 
       await saveImageMetadata({
-        filename: file.name,
+        filename: uploadFileObj.name,
         ossKey,
         ossUrl: accessUrl,
-        contentType: file.type || 'application/octet-stream',
+        contentType: uploadFileObj.type || 'application/octet-stream',
         md5,
-        fileSize: file.size,
+        fileSize: uploadFileObj.size,
         width: dims.width,
         height: dims.height,
         published

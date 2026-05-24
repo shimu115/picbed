@@ -62,7 +62,7 @@
     "title": "上传图片",
     "dragHint": "拖拽图片到此处，或点击浏览",
     "noTokenHint": "请先设置认证 Token 后再上传",
-    "typeHint": "支持：PNG、JPEG、GIF、WebP、SVG、BMP、TIFF · 最大 20MB",
+    "typeHint": "支持：PNG、JPEG、GIF、WebP、SVG、BMP、TIFF · 最大 50MB",
     "queue": "上传队列",
     "clearCompleted": "清除已完成",
     "waiting": "等待中...",
@@ -73,7 +73,10 @@
     "uploadFailed": "{count} 个文件上传失败",
     "uploadFailedMsg": "上传失败",
     "publishToGallery": "展示到画廊",
-    "filenameTooLong": "文件名超过{max}字符，请重命名后重新上传"
+    "filenameTooLong": "文件名超过{max}字符，请重命名后重新上传",
+    "fileTooLarge": "图片超过{max}MB，是否压缩后上传？",
+    "fileTooLargeRejected": "图片超过{max}MB，已取消上传",
+    "compressFailed": "图片压缩失败"
   },
   "manage": {
     "title": "管理",

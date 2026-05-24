@@ -32,6 +32,11 @@ export const useUploadStore = defineStore('upload', () => {
     }
   }
 
+  function updateFile(id, file) {
+    const item = queue.value.find(i => i.id === id)
+    if (item) item.file = file
+  }
+
   function markError(id, msg) {
     const item = queue.value.find(i => i.id === id)
     if (item) {
@@ -48,5 +53,5 @@ export const useUploadStore = defineStore('upload', () => {
     queue.value = []
   }
 
-  return { queue, addFile, updateProgress, markSuccess, markError, clearCompleted, clearAll }
+  return { queue, addFile, updateProgress, updateFile, markSuccess, markError, clearCompleted, clearAll }
 })

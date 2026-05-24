@@ -62,7 +62,7 @@
     "title": "Upload Images",
     "dragHint": "Drag and drop images here, or click to browse",
     "noTokenHint": "Set your auth token first to upload",
-    "typeHint": "Supported: PNG, JPEG, GIF, WebP, SVG, BMP, TIFF · Max 20MB",
+    "typeHint": "Supported: PNG, JPEG, GIF, WebP, SVG, BMP, TIFF · Max 50MB",
     "queue": "Upload Queue",
     "clearCompleted": "Clear completed",
     "waiting": "Waiting...",
@@ -73,7 +73,10 @@
     "uploadFailed": "{count} file(s) failed",
     "uploadFailedMsg": "Upload failed",
     "publishToGallery": "Show in gallery",
-    "filenameTooLong": "Filename exceeds {max} characters, please rename and re-upload"
+    "filenameTooLong": "Filename exceeds {max} characters, please rename and re-upload",
+    "fileTooLarge": "File exceeds {max}MB, compress and upload?",
+    "fileTooLargeRejected": "File exceeds {max}MB, upload cancelled",
+    "compressFailed": "Image compression failed"
   },
   "manage": {
     "title": "Management",
