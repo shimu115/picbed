@@ -72,7 +72,8 @@
     "uploadSuccess": "{count} file(s) uploaded",
     "uploadFailed": "{count} file(s) failed",
     "uploadFailedMsg": "Upload failed",
-    "publishToGallery": "Show in gallery"
+    "publishToGallery": "Show in gallery",
+    "filenameTooLong": "Filename exceeds {max} characters, please rename and re-upload"
   },
   "manage": {
     "title": "Management",

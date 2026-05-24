@@ -21,7 +21,10 @@ async function handleUpload(files) {
   const success = results.filter(r => r.success).length
   const failed = results.filter(r => !r.success).length
   if (success > 0) ElMessage.success(t('upload.uploadSuccess', { count: success }))
-  if (failed > 0) ElMessage.error(t('upload.uploadFailed', { count: failed }))
+  if (failed > 0) {
+    const firstError = results.find(r => !r.success)?.error
+    ElMessage.error(firstError || t('upload.uploadFailed', { count: failed }))
+  }
 }
 </script>
 

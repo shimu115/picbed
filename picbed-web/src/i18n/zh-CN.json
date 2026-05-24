@@ -72,7 +72,8 @@
     "uploadSuccess": "{count} 个文件上传成功",
     "uploadFailed": "{count} 个文件上传失败",
     "uploadFailedMsg": "上传失败",
-    "publishToGallery": "展示到画廊"
+    "publishToGallery": "展示到画廊",
+    "filenameTooLong": "文件名超过{max}字符，请重命名后重新上传"
   },
   "manage": {
     "title": "管理",

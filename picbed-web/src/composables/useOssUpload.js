@@ -1,6 +1,15 @@
 import SparkMD5 from 'spark-md5'
 import { getUploadSignature, saveImageMetadata } from '@/api'
 import { useUploadStore } from '@/stores/upload'
+import i18n from '@/i18n'
+
+function validateFilename(name, maxLen = 64) {
+  const dotIndex = name.lastIndexOf('.')
+  const base = dotIndex > 0 ? name.substring(0, dotIndex) : name
+  if (base.length > maxLen) {
+    throw new Error(i18n.global.t('upload.filenameTooLong', { max: maxLen }))
+  }
+}
 
 function getImageDimensions(file) {
   return new Promise((resolve) => {
@@ -61,6 +70,8 @@ export function useOssUpload() {
     uploadStore.addFile(uid, file)
 
     try {
+      validateFilename(file.name)
+
       const [md5, dims] = await Promise.all([computeMd5(file), getImageDimensions(file)])
 
       const sigRes = await getUploadSignature(file.name, file.type || 'application/octet-stream', md5)

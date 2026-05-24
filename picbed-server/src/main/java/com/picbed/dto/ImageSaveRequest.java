@@ -8,6 +8,7 @@ import lombok.Data;
 public class ImageSaveRequest {
 
     @NotBlank
+    @Size(max = 255)
     private String filename;
 
     @NotBlank

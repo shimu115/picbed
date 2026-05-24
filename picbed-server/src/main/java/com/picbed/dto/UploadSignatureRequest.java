@@ -8,7 +8,7 @@ import lombok.Data;
 public class UploadSignatureRequest {
 
     @NotBlank
-    @Size(max = 500)
+    @Size(max = 255)
     private String filename;
 
     @NotBlank
