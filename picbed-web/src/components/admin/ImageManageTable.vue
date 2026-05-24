@@ -228,20 +228,6 @@ onMounted(loadImages)
       </el-select>
       <div class="toolbar-actions desktop-only">
         <el-button
-          size="small"
-          :disabled="selection.length === 0"
-          @click="handleBatchPublish(true)"
-        >
-          {{ t('manage.batchPublish', { count: selection.length }) }}
-        </el-button>
-        <el-button
-          size="small"
-          :disabled="selection.length === 0"
-          @click="handleBatchPublish(false)"
-        >
-          {{ t('manage.batchUnpublish', { count: selection.length }) }}
-        </el-button>
-        <el-button
           type="danger"
           size="small"
           :disabled="selection.length === 0"
@@ -349,12 +335,6 @@ onMounted(loadImages)
     <!-- Mobile: floating action bar -->
     <transition name="float-fade">
       <div v-if="selectMode && selection.length > 0" class="float-action-bar mobile-only">
-        <el-button size="small" round @click="handleBatchPublish(true)">
-          {{ t('manage.publish') }} ({{ selection.length }})
-        </el-button>
-        <el-button size="small" round @click="handleBatchPublish(false)">
-          {{ t('manage.unpublish') }} ({{ selection.length }})
-        </el-button>
         <el-button size="small" type="danger" round @click="handleBatchDelete">
           {{ t('manage.delete') }} ({{ selection.length }})
         </el-button>
