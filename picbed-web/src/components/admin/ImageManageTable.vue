@@ -5,6 +5,7 @@ import { useTokenStore } from '@/stores/token'
 import { getAdminImages, deleteImage, batchDeleteImages, batchPublishImages } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { DocumentCopy } from '@element-plus/icons-vue'
+import ImagePreview from '@/components/gallery/ImagePreview.vue'
 
 const { t } = useI18n()
 const tokenStore = useTokenStore()
@@ -16,6 +17,8 @@ const page = ref(0)
 const pageSize = ref(20)
 const selectMode = ref(false)
 const publishedFilter = ref(undefined)
+const previewImage = ref(null)
+const showPreview = ref(false)
 
 const selectedIds = computed(() => new Set(selection.value.map(i => i.id)))
 const allSelected = computed(() =>
@@ -185,6 +188,15 @@ function fileSizeLabel(bytes) {
   return (bytes / 1048576).toFixed(1) + ' MB'
 }
 
+function openPreview(img) {
+  previewImage.value = img
+  showPreview.value = true
+}
+
+function closePreview() {
+  showPreview.value = false
+}
+
 function formatDate(dateStr) {
   return dateStr?.replace('T', ' ')?.substring(0, 19)
 }
@@ -254,7 +266,7 @@ onMounted(loadImages)
         <el-table-column type="selection" width="45" />
         <el-table-column :label="t('manage.preview')" width="80">
           <template #default="{ row }">
-            <img :src="row.ossUrl" class="thumb" />
+            <img :src="row.ossUrl" class="thumb" @click="openPreview(row)" />
           </template>
         </el-table-column>
         <el-table-column prop="filename" :label="t('manage.filename')" min-width="160" show-overflow-tooltip />
@@ -302,7 +314,7 @@ onMounted(loadImages)
         <div v-if="selectMode" class="card-check">
           <el-checkbox :model-value="selectedIds.has(img.id)" @click.stop="toggleSelect(img)" />
         </div>
-        <img :src="img.ossUrl" class="card-thumb" />
+        <img :src="img.ossUrl" class="card-thumb" @click.stop="openPreview(img)" />
         <div class="card-body">
           <div class="card-filename">{{ img.filename }}</div>
           <div class="card-meta">
@@ -352,6 +364,12 @@ onMounted(loadImages)
       @current-change="handlePageChange"
       style="margin-top: 16px; justify-content: center; display: flex; flex-wrap: wrap;"
     />
+
+    <ImagePreview
+      :image="previewImage"
+      :visible="showPreview"
+      @close="closePreview"
+    />
   </div>
 </template>
 
@@ -361,6 +379,7 @@ onMounted(loadImages)
   height: 50px;
   object-fit: cover;
   border-radius: 4px;
+  cursor: pointer;
 }
 
 .toolbar {
@@ -431,6 +450,7 @@ onMounted(loadImages)
   object-fit: cover;
   border-radius: 6px;
   flex-shrink: 0;
+  cursor: pointer;
 }
 .card-body {
   flex: 1;

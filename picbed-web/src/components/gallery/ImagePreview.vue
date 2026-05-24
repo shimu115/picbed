@@ -37,7 +37,14 @@ function copyUrl(text) {
     destroy-on-close
   >
     <div v-if="image" class="preview-content">
-      <img :src="image.ossUrl" :alt="image.filename" class="preview-image" />
+      <el-image
+        :src="image.ossUrl"
+        :alt="image.filename"
+        :preview-src-list="[image.ossUrl]"
+        :hide-on-click-modal="true"
+        fit="contain"
+        class="preview-image"
+      />
       <div class="preview-info">
         <el-descriptions :column="2" border size="small">
           <el-descriptions-item :label="t('gallery.filename')">{{ image.filename }}</el-descriptions-item>
@@ -68,6 +75,10 @@ function copyUrl(text) {
   max-height: 60vh;
   border-radius: 4px;
   margin-bottom: 16px;
+}
+.preview-image :deep(img) {
+  max-height: 60vh;
+  object-fit: contain;
 }
 .preview-info {
   text-align: left;
