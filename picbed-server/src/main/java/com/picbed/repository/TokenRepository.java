@@ -17,4 +17,7 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
     long countByIsActiveTrueAndRole(String role);
 
     List<Token> findByIsActiveTrueAndEmailIsNotNull();
+
+    boolean existsByEmailAndIsActiveTrue(String email);
 }
+

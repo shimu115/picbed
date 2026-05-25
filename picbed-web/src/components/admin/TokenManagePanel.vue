@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { listTokens, createToken, revokeToken, updateTokenEmail, adminRefreshToken, warnToken } from '@/api'
+import { listTokens, createToken, revokeToken, updateTokenEmail, adminRefreshToken, warnToken, adminSendVerificationCode, adminVerifyEmailCode } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { t } = useI18n()
@@ -10,9 +10,16 @@ const loading = ref(false)
 const newTokenName = ref('')
 const newTokenEmail = ref('')
 const generatedToken = ref('')
-const editingEmailId = ref(null)
-const editingEmailValue = ref('')
+const showEmailDialog = ref(false)
+const editingToken = ref(null)
+const emailDialogStep = ref(1)
+const editNewEmail = ref('')
 const savingEmail = ref(false)
+const codeInput = ref('')
+const verifyingOldEmail = ref(false)
+const sendingCode = ref(false)
+const codeCountdown = ref(0)
+let countdownTimer = null
 
 async function loadTokens() {
   loading.value = true
@@ -54,26 +61,70 @@ async function handleRevoke(token) {
   }
 }
 
-function startEditEmail(token) {
-  editingEmailId.value = token.id
-  editingEmailValue.value = token.email || ''
+function openEmailDialog(token) {
+  editingToken.value = token
+  emailDialogStep.value = 1
+  editNewEmail.value = ''
+  codeInput.value = ''
+  codeCountdown.value = 0
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+  showEmailDialog.value = true
 }
 
-async function saveEmail(token) {
+function startCountdown() {
+  codeCountdown.value = 60
+  countdownTimer = setInterval(() => {
+    codeCountdown.value--
+    if (codeCountdown.value <= 0) {
+      clearInterval(countdownTimer)
+      countdownTimer = null
+    }
+  }, 1000)
+}
+
+async function handleAdminSendCode() {
+  if (!editingToken.value) return
+  sendingCode.value = true
+  try {
+    await adminSendVerificationCode(editingToken.value.id)
+    ElMessage.success(t('token.codeSent'))
+    startCountdown()
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
+  } finally {
+    sendingCode.value = false
+  }
+}
+
+async function handleVerifyOldEmail() {
+  if (!codeInput.value.trim() || !editingToken.value) return
+  verifyingOldEmail.value = true
+  try {
+    await adminVerifyEmailCode(editingToken.value.id, codeInput.value.trim())
+    ElMessage.success(t('token.emailVerified'))
+    emailDialogStep.value = 2
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
+  } finally {
+    verifyingOldEmail.value = false
+  }
+}
+
+async function saveEmailDialog() {
   savingEmail.value = true
   try {
-    await updateTokenEmail(token.id, editingEmailValue.value.trim())
+    await updateTokenEmail(editingToken.value.id, editNewEmail.value.trim())
     await loadTokens()
-    editingEmailId.value = null
+    showEmailDialog.value = false
+    ElMessage.success(t('token.emailSaved'))
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || t('error.serverError'))
   } finally {
     savingEmail.value = false
   }
-}
-
-function cancelEditEmail() {
-  editingEmailId.value = null
 }
 
 const refreshingId = ref(null)
@@ -193,25 +244,9 @@ onUnmounted(() => {
       <el-table-column prop="name" :label="t('token.name')" />
       <el-table-column :label="t('token.email')" width="260">
         <template #default="{ row }">
-          <template v-if="editingEmailId === row.id">
-            <el-input
-              v-model="editingEmailValue"
-              size="small"
-              :placeholder="t('token.emailPlaceholder')"
-              style="width: 130px"
-              @keyup.enter="saveEmail(row)"
-              @keyup.escape="cancelEditEmail"
-            />
-            <el-button size="small" type="primary" text :loading="savingEmail" @click="saveEmail(row)">
-              {{ t('common.save') }}
-            </el-button>
-            <el-button size="small" text @click="cancelEditEmail">{{ t('common.cancel') }}</el-button>
-          </template>
-          <template v-else>
-            <span class="email-cell" @click="startEditEmail(row)">
-              {{ row.email || '-' }}
-            </span>
-          </template>
+          <span class="email-cell" @click="openEmailDialog(row)">
+            {{ row.email || '-' }}
+          </span>
         </template>
       </el-table-column>
       <el-table-column :label="t('token.role')" width="80">
@@ -231,7 +266,7 @@ onUnmounted(() => {
       <el-table-column :label="t('token.created')" width="170">
         <template #default="{ row }">{{ row.createdAt?.replace('T', ' ')?.substring(0, 19) }}</template>
       </el-table-column>
-      <el-table-column :label="t('token.actions')" width="220">
+      <el-table-column :label="t('token.actions')" width="230">
         <template #default="{ row }">
           <template v-if="row.isActive">
             <el-button
@@ -245,7 +280,7 @@ onUnmounted(() => {
               {{ t('token.adminRefresh') }}
             </el-button>
             <el-button
-              v-if="row.email"
+              v-if="row.role !== 'ADMIN' && row.email"
               size="small"
               type="warning"
               text
@@ -253,7 +288,13 @@ onUnmounted(() => {
             >
               {{ t('token.warnUser') }}
             </el-button>
-            <el-button size="small" type="danger" text @click="handleRevoke(row)">
+            <el-button
+              v-if="row.role !== 'ADMIN'"
+              size="small"
+              type="danger"
+              text
+              @click="handleRevoke(row)"
+            >
               {{ t('token.revoke') }}
             </el-button>
           </template>
@@ -262,6 +303,58 @@ onUnmounted(() => {
     </el-table>
     </div>
 
+    <el-dialog
+      v-model="showEmailDialog"
+      :title="emailDialogStep === 1 ? t('token.verifyOldEmail') : t('token.setEmail')"
+      width="420px"
+      :close-on-click-modal="false"
+      @close="editingToken = null"
+    >
+      <template v-if="editingToken">
+        <!-- Step 1: Verify old email -->
+        <template v-if="emailDialogStep === 1">
+          <p class="current-email-hint">
+            {{ t('token.currentEmail') }}：{{ editingToken.email }}
+          </p>
+          <div class="code-row">
+            <el-input
+              v-model="codeInput"
+              :placeholder="t('token.codePlaceholder')"
+              @keyup.enter="handleVerifyOldEmail"
+            />
+            <el-button
+              type="primary"
+              :loading="sendingCode"
+              :disabled="codeCountdown > 0"
+              @click="handleAdminSendCode"
+            >
+              {{ codeCountdown > 0 ? t('token.codeResend', { seconds: codeCountdown }) : t('token.sendCode') }}
+            </el-button>
+          </div>
+        </template>
+        <!-- Step 2: Enter new email -->
+        <template v-else>
+          <el-input
+            v-model="editNewEmail"
+            :placeholder="t('token.emailPlaceholder')"
+            @keyup.enter="saveEmailDialog"
+          />
+        </template>
+      </template>
+      <template #footer>
+        <el-button @click="showEmailDialog = false">{{ t('common.cancel') }}</el-button>
+        <template v-if="emailDialogStep === 1">
+          <el-button type="primary" :loading="verifyingOldEmail" :disabled="!codeInput.trim()" @click="handleVerifyOldEmail">
+            {{ t('token.verify') }}
+          </el-button>
+        </template>
+        <template v-else>
+          <el-button type="primary" :loading="savingEmail" :disabled="!editNewEmail.trim()" @click="saveEmailDialog">
+            {{ t('common.save') }}
+          </el-button>
+        </template>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -299,6 +392,18 @@ onUnmounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   display: inline-block;
+}
+.current-email-hint {
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 10px;
+}
+.code-row {
+  display: flex;
+  gap: 8px;
+}
+.code-row .el-input {
+  flex: 1;
 }
 .email-cell:hover {
   text-decoration: underline;

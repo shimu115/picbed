@@ -65,7 +65,10 @@
     "warnConfirm": "确定要向 \"{name}\" 的邮箱发送安全提醒吗？",
     "warnSent": "安全提醒已发送",
     "adminRefresh": "刷新",
-    "adminRefreshConfirm": "确定要刷新 \"{name}\" 的 Token 吗？新 Token 将自动发送到其邮箱。"
+    "adminRefreshConfirm": "确定要刷新 \"{name}\" 的 Token 吗？新 Token 将自动发送到其邮箱。",
+    "verifyOldEmail": "验证旧邮箱",
+    "currentEmail": "当前邮箱",
+    "verify": "验证"
   },
   "gallery": {
     "title": "画廊",

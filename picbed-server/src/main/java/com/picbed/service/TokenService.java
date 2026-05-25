@@ -74,7 +74,12 @@ public class TokenService {
     public void updateEmail(Long tokenId, String email) {
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new IllegalArgumentException("Token not found: " + tokenId));
-        token.setEmail(email != null && !email.isBlank() ? email.trim() : null);
+        String normalized = (email != null && !email.isBlank()) ? email.trim().toLowerCase() : null;
+        if (normalized != null && tokenRepository.existsByEmailAndIsActiveTrue(normalized)
+                && !normalized.equals(token.getEmail())) {
+            throw new IllegalArgumentException("邮箱已被其他用户使用，请换一个邮箱");
+        }
+        token.setEmail(normalized);
         tokenRepository.save(token);
         log.info("Updated email for token '{}' (id={})", token.getName(), token.getId());
     }
@@ -153,11 +158,8 @@ public class TokenService {
         }
 
         if ("ADMIN".equalsIgnoreCase(target.getRole())) {
-            long adminCount = tokenRepository.countByIsActiveTrueAndRole("ADMIN");
-            if (adminCount <= 1) {
-                log.warn("Revoke rejected: attempt to revoke last admin token '{}' (id={})", target.getName(), id);
-                throw new IllegalArgumentException("Cannot revoke the last admin token");
-            }
+            log.warn("Revoke rejected: attempt to revoke admin token '{}' (id={})", target.getName(), id);
+            throw new IllegalArgumentException("Cannot revoke an admin token");
         }
 
         target.setIsActive(false);

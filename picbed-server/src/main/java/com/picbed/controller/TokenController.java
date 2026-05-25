@@ -1,6 +1,7 @@
 package com.picbed.controller;
 
 import com.picbed.config.SetupTokenManager;
+import com.picbed.dto.CodeRequest;
 import com.picbed.dto.Result;
 import com.picbed.dto.SendCodeRequest;
 import com.picbed.dto.TokenCreateRequest;
@@ -170,6 +171,51 @@ public class TokenController {
         }
         try {
             tokenService.updateEmail(id, request.getEmail());
+            return ResponseEntity.ok(Result.success());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));
+        }
+    }
+
+    @PostMapping("/api/admin/tokens/{id}/email/send-code")
+    public ResponseEntity<Result<Void>> adminSendVerificationCode(
+            @RequestHeader("X-Auth-Token") String authToken,
+            @PathVariable Long id) {
+        Token requester = tokenService.findByRawToken(authToken).orElse(null);
+        if (requester == null || !"ADMIN".equalsIgnoreCase(requester.getRole())) {
+            return ResponseEntity.status(403)
+                    .body(Result.error("Admin role required", 403));
+        }
+        String email = tokenService.getTokenEmail(id);
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Result.error("Token has no email set", 400));
+        }
+        try {
+            emailVerificationService.sendCode(id, email);
+            return ResponseEntity.ok(Result.success());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(429).body(Result.error(e.getMessage(), 429));
+        }
+    }
+
+    @PostMapping("/api/admin/tokens/{id}/email/verify-code")
+    public ResponseEntity<Result<Void>> adminVerifyEmailCode(
+            @RequestHeader("X-Auth-Token") String authToken,
+            @PathVariable Long id,
+            @Valid @RequestBody CodeRequest request) {
+        Token requester = tokenService.findByRawToken(authToken).orElse(null);
+        if (requester == null || !"ADMIN".equalsIgnoreCase(requester.getRole())) {
+            return ResponseEntity.status(403)
+                    .body(Result.error("Admin role required", 403));
+        }
+        String email = tokenService.getTokenEmail(id);
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Result.error("Token has no email set", 400));
+        }
+        try {
+            emailVerificationService.verifyCode(id, email, request.getCode());
             return ResponseEntity.ok(Result.success());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));

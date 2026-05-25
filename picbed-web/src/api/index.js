@@ -130,6 +130,14 @@ export function warnToken(id) {
   return api.post(`/api/admin/tokens/${id}/warn`)
 }
 
+export function adminSendVerificationCode(id) {
+  return api.post(`/api/admin/tokens/${id}/email/send-code`)
+}
+
+export function adminVerifyEmailCode(id, code) {
+  return api.post(`/api/admin/tokens/${id}/email/verify-code`, { code })
+}
+
 export function revokeToken(id) {
   return api.delete(`/api/admin/tokens/${id}`)
 }
