@@ -2,11 +2,14 @@ package com.picbed.controller;
 
 import com.picbed.config.SetupTokenManager;
 import com.picbed.dto.Result;
+import com.picbed.dto.SendCodeRequest;
 import com.picbed.dto.TokenCreateRequest;
 import com.picbed.dto.TokenEmailUpdateRequest;
 import com.picbed.dto.TokenRefreshRequest;
+import com.picbed.dto.VerifyCodeRequest;
 import com.picbed.entity.Token;
 import com.picbed.service.EmailService;
+import com.picbed.service.EmailVerificationService;
 import com.picbed.service.TokenService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +31,8 @@ public class TokenController {
     private SetupTokenManager setupTokenManager;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private EmailVerificationService emailVerificationService;
 
     @GetMapping("/api/public/status")
     public ResponseEntity<Result<Map<String, Object>>> getStatus() {
@@ -63,6 +68,41 @@ public class TokenController {
         }
         tokenService.updateEmail(token.getId(), request.getEmail());
         return ResponseEntity.ok(Result.success());
+    }
+
+    @PostMapping("/api/account/email/send-code")
+    public ResponseEntity<Result<Void>> sendVerificationCode(
+            @RequestHeader("X-Auth-Token") String authToken,
+            @Valid @RequestBody SendCodeRequest request) {
+        Token token = tokenService.findByRawToken(authToken).orElse(null);
+        if (token == null || !token.getIsActive()) {
+            return ResponseEntity.status(401)
+                    .body(Result.error("Invalid token", 401));
+        }
+        try {
+            emailVerificationService.sendCode(token.getId(), request.getEmail());
+            return ResponseEntity.ok(Result.success());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(429).body(Result.error(e.getMessage(), 429));
+        }
+    }
+
+    @PostMapping("/api/account/email/verify")
+    public ResponseEntity<Result<Void>> verifyEmailCode(
+            @RequestHeader("X-Auth-Token") String authToken,
+            @Valid @RequestBody VerifyCodeRequest request) {
+        Token token = tokenService.findByRawToken(authToken).orElse(null);
+        if (token == null || !token.getIsActive()) {
+            return ResponseEntity.status(401)
+                    .body(Result.error("Invalid token", 401));
+        }
+        try {
+            emailVerificationService.verifyCode(token.getId(), request.getEmail(), request.getCode());
+            tokenService.updateEmail(token.getId(), request.getEmail());
+            return ResponseEntity.ok(Result.success());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));
+        }
     }
 
     @PostMapping("/api/setup/token")

@@ -110,6 +110,14 @@ export function updateOwnEmail(email) {
   return api.put('/api/account/email', { email })
 }
 
+export function sendVerificationCode(email) {
+  return api.post('/api/account/email/send-code', { email })
+}
+
+export function verifyEmailCode(email, code) {
+  return api.post('/api/account/email/verify', { email, code })
+}
+
 export function refreshOwnToken(sendEmail) {
   return api.post('/api/account/refresh', { sendEmail })
 }

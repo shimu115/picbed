@@ -1,10 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useTokenStore } from '@/stores/token'
-import { updateOwnEmail } from '@/api'
+import { sendVerificationCode, verifyEmailCode } from '@/api'
 import { ElMessage } from 'element-plus'
 
 const { t } = useI18n()
@@ -13,25 +13,68 @@ const tokenStore = useTokenStore()
 
 const showEmailDialog = ref(false)
 const emailInput = ref('')
-const savingEmail = ref(false)
+const codeInput = ref('')
+const sendingCode = ref(false)
+const verifying = ref(false)
+const countdown = ref(0)
+let countdownTimer = null
 
 onMounted(() => {
   settingsStore.fetchSettings()
 })
 
-async function handleSetEmail() {
+onUnmounted(() => {
+  if (countdownTimer) clearInterval(countdownTimer)
+})
+
+function startCountdown() {
+  countdown.value = 60
+  countdownTimer = setInterval(() => {
+    countdown.value--
+    if (countdown.value <= 0) {
+      clearInterval(countdownTimer)
+      countdownTimer = null
+    }
+  }, 1000)
+}
+
+async function handleSendCode() {
   if (!emailInput.value.trim()) return
-  savingEmail.value = true
+  sendingCode.value = true
   try {
-    await updateOwnEmail(emailInput.value.trim())
+    await sendVerificationCode(emailInput.value.trim())
+    ElMessage.success(t('token.codeSent'))
+    startCountdown()
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
+  } finally {
+    sendingCode.value = false
+  }
+}
+
+async function handleVerify() {
+  if (!emailInput.value.trim() || !codeInput.value.trim()) return
+  verifying.value = true
+  try {
+    await verifyEmailCode(emailInput.value.trim(), codeInput.value.trim())
     tokenStore.setEmail(emailInput.value.trim())
     window.dispatchEvent(new CustomEvent('token-email-updated'))
-    ElMessage.success(t('token.emailSaved'))
+    ElMessage.success(t('token.emailVerified'))
     showEmailDialog.value = false
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || t('error.serverError'))
   } finally {
-    savingEmail.value = false
+    verifying.value = false
+  }
+}
+
+function resetDialog() {
+  emailInput.value = ''
+  codeInput.value = ''
+  countdown.value = 0
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
   }
 }
 </script>
@@ -51,18 +94,36 @@ async function handleSetEmail() {
 
     <el-dialog
       v-model="showEmailDialog"
-      :title="t('token.setEmail')"
-      width="400px"
+      :title="t('token.verifyEmail')"
+      width="420px"
       :close-on-click-modal="false"
+      @close="resetDialog"
     >
-      <el-input
-        v-model="emailInput"
-        :placeholder="t('token.emailPlaceholder')"
-        @keyup.enter="handleSetEmail"
-      />
+      <div class="email-verify-form">
+        <div class="email-row">
+          <el-input
+            v-model="emailInput"
+            :placeholder="t('token.emailPlaceholder')"
+          />
+          <el-button
+            type="primary"
+            :loading="sendingCode"
+            :disabled="!emailInput.trim() || countdown > 0"
+            @click="handleSendCode"
+          >
+            {{ countdown > 0 ? t('token.codeResend', { seconds: countdown }) : t('token.sendCode') }}
+          </el-button>
+        </div>
+        <el-input
+          v-model="codeInput"
+          :placeholder="t('token.codePlaceholder')"
+          style="margin-top: 12px"
+          @keyup.enter="handleVerify"
+        />
+      </div>
       <template #footer>
         <el-button @click="showEmailDialog = false">{{ t('common.cancel') }}</el-button>
-        <el-button type="primary" :loading="savingEmail" :disabled="!emailInput.trim()" @click="handleSetEmail">
+        <el-button type="primary" :loading="verifying" :disabled="!emailInput.trim() || !codeInput.trim()" @click="handleVerify">
           {{ t('common.save') }}
         </el-button>
       </template>
@@ -82,12 +143,26 @@ async function handleSetEmail() {
   font-size: 14px;
   color: #e6a23c;
 }
+.email-verify-form {
+  display: flex;
+  flex-direction: column;
+}
+.email-row {
+  display: flex;
+  gap: 8px;
+}
+.email-row .el-input {
+  flex: 1;
+}
 @media (max-width: 767px) {
   .email-banner {
     flex-direction: column;
     gap: 8px;
     text-align: center;
     font-size: 13px;
+  }
+  .email-row {
+    flex-direction: column;
   }
 }
 </style>

@@ -46,3 +46,16 @@ ALTER TABLE IF EXISTS app_settings ADD COLUMN IF NOT EXISTS token_auto_refresh_e
 
 MERGE INTO app_settings (id, upload_size_limit_enabled, upload_size_limit_mb, token_refresh_cron, token_auto_refresh_enabled, updated_at)
     KEY(id) VALUES (1, FALSE, 50, '0 0 2 */3 * ?', FALSE, CURRENT_TIMESTAMP);
+
+CREATE TABLE IF NOT EXISTS email_verification (
+    email VARCHAR(255) PRIMARY KEY,
+    code VARCHAR(10) NOT NULL,
+    token_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS email_attempt_log (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    token_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
