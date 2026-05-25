@@ -106,6 +106,10 @@ export function updateTokenEmail(id, email) {
   return api.put(`/api/admin/tokens/${id}/email`, { email })
 }
 
+export function updateOwnEmail(email) {
+  return api.put('/api/account/email', { email })
+}
+
 export function revokeToken(id) {
   return api.delete(`/api/admin/tokens/${id}`)
 }

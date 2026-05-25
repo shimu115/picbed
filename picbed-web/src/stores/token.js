@@ -7,11 +7,13 @@ export const useTokenStore = defineStore('token', () => {
   const token = ref(localStorage.getItem('auth_token') || '')
   const role = ref('')
   const tokenId = ref(null)
+  const email = ref('')
   const isValid = ref(false)
   const router = useRouter()
 
   const hasToken = computed(() => token.value.length > 0)
   const isAdmin = computed(() => role.value === 'ADMIN')
+  const emailMissing = computed(() => hasToken.value && isValid.value && !email.value)
 
   async function validateToken() {
     if (!hasToken.value) {
@@ -24,11 +26,17 @@ export const useTokenStore = defineStore('token', () => {
       isValid.value = res.data?.data?.valid === true
       role.value = res.data?.data?.role || ''
       tokenId.value = res.data?.data?.id || null
+      email.value = res.data?.data?.email || ''
     } catch {
       isValid.value = false
       role.value = ''
+      email.value = ''
       clearToken()
     }
+  }
+
+  function setEmail(val) {
+    email.value = val
   }
 
   function setToken(rawToken) {
@@ -56,5 +64,5 @@ export const useTokenStore = defineStore('token', () => {
     clearToken()
   })
 
-  return { token, role, tokenId, isValid, hasToken, isAdmin, setToken, clearToken, validateToken }
+  return { token, role, tokenId, email, isValid, hasToken, isAdmin, emailMissing, setToken, clearToken, validateToken, setEmail }
 })

@@ -79,8 +79,18 @@ public class TokenService {
         log.info("Updated email for token '{}' (id={})", token.getName(), token.getId());
     }
 
-    public List<Token> findAllActiveWithEmail() {
-        return tokenRepository.findByIsActiveTrueAndEmailIsNotNull();
+    public List<Token> findAllActive() {
+        return tokenRepository.findByIsActiveTrue();
+    }
+
+    @Transactional
+    public void revokeById(Long id) {
+        Token token = tokenRepository.findById(id).orElse(null);
+        if (token != null && token.getIsActive()) {
+            token.setIsActive(false);
+            tokenRepository.save(token);
+            log.info("System revoked token '{}' (id={})", token.getName(), id);
+        }
     }
 
     @Transactional

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,12 +39,26 @@ public class TokenController {
             return ResponseEntity.status(401)
                     .body(Result.error("Invalid token", 401));
         }
-        return ResponseEntity.ok(Result.success(Map.of(
-                "valid", true,
-                "id", token.getId(),
-                "name", token.getName(),
-                "role", token.getRole()
-        )));
+        Map<String, Object> data = new HashMap<>();
+        data.put("valid", true);
+        data.put("id", token.getId());
+        data.put("name", token.getName());
+        data.put("role", token.getRole());
+        data.put("email", token.getEmail());
+        return ResponseEntity.ok(Result.success(data));
+    }
+
+    @PutMapping("/api/account/email")
+    public ResponseEntity<Result<Void>> updateOwnEmail(
+            @RequestHeader("X-Auth-Token") String authToken,
+            @RequestBody TokenEmailUpdateRequest request) {
+        Token token = tokenService.findByRawToken(authToken).orElse(null);
+        if (token == null || !token.getIsActive()) {
+            return ResponseEntity.status(401)
+                    .body(Result.error("Invalid token", 401));
+        }
+        tokenService.updateEmail(token.getId(), request.getEmail());
+        return ResponseEntity.ok(Result.success());
     }
 
     @PostMapping("/api/setup/token")

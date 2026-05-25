@@ -24,21 +24,28 @@ public class TokenRefreshJob implements Job {
     @Override
     public void execute(JobExecutionContext context) {
         log.info("Token refresh job started");
-        List<Token> tokens = tokenService.findAllActiveWithEmail();
+        List<Token> tokens = tokenService.findAllActive();
         if (tokens.isEmpty()) {
-            log.info("No tokens with email to refresh");
+            log.info("No active tokens to process");
             return;
         }
-        int count = 0;
+        int refreshed = 0;
+        int revoked = 0;
         for (Token token : tokens) {
             try {
-                String newRawToken = tokenService.refreshToken(token.getId());
-                emailService.sendTokenRefresh(token.getEmail(), token.getName(), newRawToken);
-                count++;
+                if (token.getEmail() != null && !token.getEmail().isBlank()) {
+                    String newRawToken = tokenService.refreshToken(token.getId());
+                    emailService.sendTokenRefresh(token.getEmail(), token.getName(), newRawToken);
+                    refreshed++;
+                } else {
+                    tokenService.revokeById(token.getId());
+                    log.info("Revoked token '{}' (id={}): no email set", token.getName(), token.getId());
+                    revoked++;
+                }
             } catch (Exception e) {
-                log.error("Failed to refresh token id={}: {}", token.getId(), e.getMessage());
+                log.error("Failed to process token id={}: {}", token.getId(), e.getMessage());
             }
         }
-        log.info("Token refresh job completed: refreshed {}/{} tokens", count, tokens.size());
+        log.info("Token refresh job completed: refreshed {}, revoked {}", refreshed, revoked);
     }
 }

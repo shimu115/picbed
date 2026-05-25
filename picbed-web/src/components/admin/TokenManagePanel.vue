@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { listTokens, createToken, revokeToken, updateTokenEmail } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -94,7 +94,14 @@ function copyGeneratedToken() {
   }
 }
 
-onMounted(loadTokens)
+onMounted(() => {
+  loadTokens()
+  window.addEventListener('token-email-updated', loadTokens)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('token-email-updated', loadTokens)
+})
 </script>
 
 <template>

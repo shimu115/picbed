@@ -43,7 +43,10 @@
     "actions": "操作",
     "copyAndGo": "复制并前往上传",
     "email": "邮箱",
-    "emailPlaceholder": "可选：接收刷新通知的邮箱"
+    "emailPlaceholder": "请输入邮箱地址",
+    "emailPrompt": "请设置邮箱以接收 Token 刷新通知，未设置邮箱的 Token 将在刷新时自动吊销",
+    "setEmail": "设置邮箱",
+    "emailSaved": "邮箱已保存"
   },
   "gallery": {
     "title": "画廊",

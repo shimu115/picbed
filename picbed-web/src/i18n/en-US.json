@@ -43,7 +43,10 @@
     "actions": "Actions",
     "copyAndGo": "Copy & Go to Upload",
     "email": "Email",
-    "emailPlaceholder": "Optional: receive refresh notifications"
+    "emailPlaceholder": "Enter email address",
+    "emailPrompt": "Set your email to receive token refresh notifications. Tokens without email will be revoked on refresh.",
+    "setEmail": "Set Email",
+    "emailSaved": "Email saved"
   },
   "gallery": {
     "title": "Gallery",
