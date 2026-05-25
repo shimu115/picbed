@@ -10,15 +10,15 @@ const settingsStore = useSettingsStore()
 
 const enabled = ref(false)
 const limitMb = ref(50)
-const refreshCron = ref('0 0 2 */3 * ?')
+const refreshCron = ref('0 0 0 */3 * ?')
 const autoRefreshEnabled = ref(false)
 const saving = ref(false)
 
 const cronPresets = [
-  { label: 'Every day 2AM', cron: '0 0 2 * * ?' },
-  { label: 'Every 3 days 2AM', cron: '0 0 2 */3 * ?' },
-  { label: 'Every 7 days 2AM', cron: '0 0 2 */7 * ?' },
-  { label: 'Every 30 days 2AM', cron: '0 0 2 */30 * ?' }
+  { label: '每天 0:00', cron: '0 0 0 * * ?' },
+  { label: '每三天 0:00', cron: '0 0 0 */3 * ?' },
+  { label: '每七天 0:00', cron: '0 0 0 */7 * ?' },
+  { label: '每三十天 0:00', cron: '0 0 0 */30 * ?' }
 ]
 
 onMounted(() => {
@@ -78,7 +78,7 @@ async function save() {
       <h4 class="section-title">{{ t('manage.tokenRefresh') }}</h4>
       <div class="setting-row">
         <span class="setting-label">{{ t('manage.tokenRefreshCron') }}</span>
-        <el-input v-model="refreshCron" size="small" style="width: 200px" placeholder="0 0 2 */3 * ?" />
+        <el-input v-model="refreshCron" size="small" style="width: 200px" placeholder="0 0 0 */3 * ?" />
       </div>
       <div class="setting-row">
         <span class="setting-label"></span>
