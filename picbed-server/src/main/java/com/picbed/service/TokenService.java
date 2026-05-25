@@ -70,6 +70,15 @@ public class TokenService {
         return tokenRepository.findByTokenHash(TokenUtil.hashToken(rawToken));
     }
 
+    @Transactional
+    public void updateEmail(Long tokenId, String email) {
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new IllegalArgumentException("Token not found: " + tokenId));
+        token.setEmail(email != null && !email.isBlank() ? email.trim() : null);
+        tokenRepository.save(token);
+        log.info("Updated email for token '{}' (id={})", token.getName(), token.getId());
+    }
+
     public List<Token> findAllActiveWithEmail() {
         return tokenRepository.findByIsActiveTrueAndEmailIsNotNull();
     }

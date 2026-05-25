@@ -12,6 +12,7 @@ const { t } = useI18n()
 
 const masterKey = ref('')
 const tokenName = ref('Admin')
+const tokenEmail = ref('')
 const generatedToken = ref('')
 const loading = ref(false)
 const error = ref('')
@@ -20,7 +21,7 @@ async function handleSetup() {
   loading.value = true
   error.value = ''
   try {
-    const res = await setupToken(masterKey.value, tokenName.value || 'Admin')
+    const res = await setupToken(masterKey.value, tokenName.value || 'Admin', tokenEmail.value.trim())
     generatedToken.value = res.data.data.token
     tokenStore.setToken(generatedToken.value)
     ElMessage.success(t('setup.success'))
@@ -50,6 +51,9 @@ function copyAndGo() {
         </el-form-item>
         <el-form-item :label="t('setup.tokenName')">
           <el-input v-model="tokenName" :placeholder="t('setup.tokenNamePlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="t('token.email')">
+          <el-input v-model="tokenEmail" :placeholder="t('token.emailPlaceholder')" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSetup" :loading="loading" :disabled="!masterKey">

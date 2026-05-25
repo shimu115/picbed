@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { listTokens, createToken, revokeToken } from '@/api'
+import { listTokens, createToken, revokeToken, updateTokenEmail } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { t } = useI18n()
@@ -10,6 +10,9 @@ const loading = ref(false)
 const newTokenName = ref('')
 const newTokenEmail = ref('')
 const generatedToken = ref('')
+const editingEmailId = ref(null)
+const editingEmailValue = ref('')
+const savingEmail = ref(false)
 
 async function loadTokens() {
   loading.value = true
@@ -49,6 +52,28 @@ async function handleRevoke(token) {
       ElMessage.error(e.response.data.msg)
     }
   }
+}
+
+function startEditEmail(token) {
+  editingEmailId.value = token.id
+  editingEmailValue.value = token.email || ''
+}
+
+async function saveEmail(token) {
+  savingEmail.value = true
+  try {
+    await updateTokenEmail(token.id, editingEmailValue.value.trim())
+    await loadTokens()
+    editingEmailId.value = null
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
+  } finally {
+    savingEmail.value = false
+  }
+}
+
+function cancelEditEmail() {
+  editingEmailId.value = null
 }
 
 function copyGeneratedToken() {
@@ -105,7 +130,29 @@ onMounted(loadTokens)
       <el-table :data="tokens" v-loading="loading">
       <el-table-column prop="id" :label="t('token.id')" width="70" />
       <el-table-column prop="name" :label="t('token.name')" />
-      <el-table-column prop="email" :label="t('token.email')" width="180" show-overflow-tooltip />
+      <el-table-column :label="t('token.email')" width="220">
+        <template #default="{ row }">
+          <template v-if="editingEmailId === row.id">
+            <el-input
+              v-model="editingEmailValue"
+              size="small"
+              :placeholder="t('token.emailPlaceholder')"
+              style="width: 130px"
+              @keyup.enter="saveEmail(row)"
+              @keyup.escape="cancelEditEmail"
+            />
+            <el-button size="small" type="primary" text :loading="savingEmail" @click="saveEmail(row)">
+              {{ t('common.save') }}
+            </el-button>
+            <el-button size="small" text @click="cancelEditEmail">{{ t('common.cancel') }}</el-button>
+          </template>
+          <template v-else>
+            <span class="email-cell" @click="startEditEmail(row)">
+              {{ row.email || '-' }}
+            </span>
+          </template>
+        </template>
+      </el-table-column>
       <el-table-column :label="t('token.role')" width="80">
         <template #default="{ row }">
           <el-tag :type="row.role === 'ADMIN' ? 'warning' : 'info'" size="small">
@@ -160,6 +207,18 @@ onMounted(loadTokens)
   color: #f56c6c;
   margin-bottom: 8px;
   font-weight: 500;
+}
+.email-cell {
+  cursor: pointer;
+  color: #409eff;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+.email-cell:hover {
+  text-decoration: underline;
 }
 .token-table-wrap {
   margin-top: 16px;

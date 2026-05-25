@@ -3,6 +3,7 @@ package com.picbed.controller;
 import com.picbed.config.SetupTokenManager;
 import com.picbed.dto.Result;
 import com.picbed.dto.TokenCreateRequest;
+import com.picbed.dto.TokenEmailUpdateRequest;
 import com.picbed.entity.Token;
 import com.picbed.service.TokenService;
 import jakarta.validation.Valid;
@@ -96,6 +97,24 @@ public class TokenController {
         }
         String role = request.getRole() != null ? request.getRole() : "USER";
         return ResponseEntity.ok(Result.success(tokenService.createToken(request.getName(), role, request.getEmail())));
+    }
+
+    @PutMapping("/api/admin/tokens/{id}/email")
+    public ResponseEntity<Result<Void>> updateTokenEmail(
+            @RequestHeader("X-Auth-Token") String authToken,
+            @PathVariable Long id,
+            @RequestBody TokenEmailUpdateRequest request) {
+        Token requester = tokenService.findByRawToken(authToken).orElse(null);
+        if (requester == null || !"ADMIN".equalsIgnoreCase(requester.getRole())) {
+            return ResponseEntity.status(403)
+                    .body(Result.error("Admin role required", 403));
+        }
+        try {
+            tokenService.updateEmail(id, request.getEmail());
+            return ResponseEntity.ok(Result.success());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));
+        }
     }
 
     @DeleteMapping("/api/admin/tokens/{id}")
