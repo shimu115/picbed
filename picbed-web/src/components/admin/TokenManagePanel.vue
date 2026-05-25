@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { listTokens, createToken, revokeToken, updateTokenEmail, adminRefreshToken, warnToken, refreshAllTokens } from '@/api'
+import { listTokens, createToken, revokeToken, updateTokenEmail, adminRefreshToken, warnToken } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { t } = useI18n()
@@ -74,28 +74,6 @@ async function saveEmail(token) {
 
 function cancelEditEmail() {
   editingEmailId.value = null
-}
-
-const refreshAllLoading = ref(false)
-
-async function handleRefreshAll() {
-  try {
-    await ElMessageBox.confirm(
-      t('token.refreshAllConfirm'),
-      t('common.confirm'),
-      { type: 'warning', confirmButtonText: t('token.refreshAll'), cancelButtonText: t('common.cancel') }
-    )
-    refreshAllLoading.value = true
-    const res = await refreshAllTokens()
-    ElMessage.success(t('token.refreshAllSuccess', { count: res.data.data.refreshed }))
-    await loadTokens()
-  } catch (e) {
-    if (e !== 'cancel' && e?.response?.data?.msg) {
-      ElMessage.error(e.response.data.msg)
-    }
-  } finally {
-    refreshAllLoading.value = false
-  }
 }
 
 const refreshingId = ref(null)
@@ -188,9 +166,6 @@ onUnmounted(() => {
       />
       <el-button type="primary" @click="handleCreate" :disabled="!newTokenName.trim()">
         {{ t('token.generate') }}
-      </el-button>
-      <el-button type="primary" :loading="refreshAllLoading" @click="handleRefreshAll" style="margin-left: auto">
-        {{ t('token.refreshAll') }}
       </el-button>
     </div>
 

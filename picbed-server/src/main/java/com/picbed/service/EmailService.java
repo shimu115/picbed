@@ -28,11 +28,12 @@ public class EmailService {
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setTo(to);
-            msg.setSubject("PicBed Token Refreshed: " + tokenName);
-            msg.setText("Your PicBed token \"" + tokenName + "\" has been refreshed.\n\n"
-                    + "New token (save it now — it will not be shown again):\n"
+            msg.setFrom(fromAddress);
+            msg.setSubject("PicBed Token 已刷新: " + tokenName);
+            msg.setText("您的 PicBed Token \"" + tokenName + "\" 已被刷新。\n\n"
+                    + "新 Token（请立即保存，关闭后将无法再次查看）：\n"
                     + newToken + "\n\n"
-                    + "The old token is now invalid.");
+                    + "旧 Token 已失效。");
             mailSender.send(msg);
             log.info("Sent token refresh email to {} for token '{}'", to, tokenName);
         } catch (Exception e) {
@@ -49,12 +50,11 @@ public class EmailService {
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setFrom(fromAddress);
             msg.setTo(to);
-            msg.setSubject("PicBed Token Security Warning: " + tokenName);
-            msg.setText("Your PicBed token \"" + tokenName + "\" may have been compromised.\n\n"
-                    + "Please bind an email address and manually refresh your token immediately "
-                    + "to prevent unauthorized access. If you do not take action, your token "
-                    + "will be revoked during the next automatic refresh cycle.\n\n"
-                    + "To secure your token: log in and use the refresh function in settings.");
+            msg.setSubject("PicBed Token 安全提醒: " + tokenName);
+            msg.setText("您的 PicBed Token \"" + tokenName + "\" 可能存在安全风险。\n\n"
+                    + "请尽快绑定邮箱并手动刷新 Token，以防止未经授权的访问。"
+                    + "若未及时处理，您的 Token 将在下次自动刷新时被吊销。\n\n"
+                    + "请登录后在设置中使用刷新功能来保护您的 Token。");
             mailSender.send(msg);
             log.info("Sent token compromised warning to {} for token '{}'", to, tokenName);
         } catch (Exception e) {
