@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS tokens (
 );
 
 ALTER TABLE IF EXISTS tokens ADD COLUMN IF NOT EXISTS role VARCHAR(10) NOT NULL DEFAULT 'USER';
+ALTER TABLE IF EXISTS tokens ADD COLUMN IF NOT EXISTS email VARCHAR(255) NULL;
 
 CREATE TABLE IF NOT EXISTS images (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -34,9 +35,12 @@ CREATE TABLE IF NOT EXISTS app_settings (
     id BIGINT NOT NULL DEFAULT 1,
     upload_size_limit_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     upload_size_limit_mb INT NOT NULL DEFAULT 50,
+    token_refresh_cron VARCHAR(50) DEFAULT '0 0 2 */3 * ?',
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id)
 );
 
-MERGE INTO app_settings (id, upload_size_limit_enabled, upload_size_limit_mb, updated_at)
-    KEY(id) VALUES (1, FALSE, 50, CURRENT_TIMESTAMP);
+ALTER TABLE IF EXISTS app_settings ADD COLUMN IF NOT EXISTS token_refresh_cron VARCHAR(50) DEFAULT '0 0 2 */3 * ?';
+
+MERGE INTO app_settings (id, upload_size_limit_enabled, upload_size_limit_mb, token_refresh_cron, updated_at)
+    KEY(id) VALUES (1, FALSE, 50, '0 0 2 */3 * ?', CURRENT_TIMESTAMP);

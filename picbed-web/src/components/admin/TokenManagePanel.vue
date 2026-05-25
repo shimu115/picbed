@@ -8,6 +8,7 @@ const { t } = useI18n()
 const tokens = ref([])
 const loading = ref(false)
 const newTokenName = ref('')
+const newTokenEmail = ref('')
 const generatedToken = ref('')
 
 async function loadTokens() {
@@ -23,9 +24,10 @@ async function loadTokens() {
 async function handleCreate() {
   if (!newTokenName.value.trim()) return
   try {
-    const res = await createToken(newTokenName.value.trim())
+    const res = await createToken(newTokenName.value.trim(), newTokenEmail.value.trim())
     generatedToken.value = res.data.data.token
     newTokenName.value = ''
+    newTokenEmail.value = ''
     await loadTokens()
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || t('token.createFailed'))
@@ -79,6 +81,12 @@ onMounted(loadTokens)
         class="name-input"
         @keyup.enter="handleCreate"
       />
+      <el-input
+        v-model="newTokenEmail"
+        :placeholder="t('token.emailPlaceholder')"
+        class="email-input"
+        @keyup.enter="handleCreate"
+      />
       <el-button type="primary" @click="handleCreate" :disabled="!newTokenName.trim()">
         {{ t('token.generate') }}
       </el-button>
@@ -97,6 +105,7 @@ onMounted(loadTokens)
       <el-table :data="tokens" v-loading="loading">
       <el-table-column prop="id" :label="t('token.id')" width="70" />
       <el-table-column prop="name" :label="t('token.name')" />
+      <el-table-column prop="email" :label="t('token.email')" width="180" show-overflow-tooltip />
       <el-table-column :label="t('token.role')" width="80">
         <template #default="{ row }">
           <el-tag :type="row.role === 'ADMIN' ? 'warning' : 'info'" size="small">
@@ -132,7 +141,11 @@ onMounted(loadTokens)
   gap: 10px;
 }
 .name-input {
-  max-width: 300px;
+  max-width: 240px;
+  flex: 1;
+}
+.email-input {
+  max-width: 260px;
   flex: 1;
 }
 .generated-token-box {

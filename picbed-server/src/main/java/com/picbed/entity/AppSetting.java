@@ -16,6 +16,9 @@ public class AppSetting {
     @Column(name = "upload_size_limit_mb", nullable = false)
     private Integer uploadSizeLimitMb = 50;
 
+    @Column(name = "token_refresh_cron", length = 50)
+    private String tokenRefreshCron = "0 0 2 */3 * ?";
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -27,6 +30,9 @@ public class AppSetting {
 
     public Integer getUploadSizeLimitMb() { return uploadSizeLimitMb; }
     public void setUploadSizeLimitMb(Integer uploadSizeLimitMb) { this.uploadSizeLimitMb = uploadSizeLimitMb; }
+
+    public String getTokenRefreshCron() { return tokenRefreshCron; }
+    public void setTokenRefreshCron(String tokenRefreshCron) { this.tokenRefreshCron = tokenRefreshCron; }
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }

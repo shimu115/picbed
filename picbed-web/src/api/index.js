@@ -45,8 +45,8 @@ export function getAdminImage(id) {
 }
 
 // Setup
-export function setupToken(masterToken, name) {
-  return api.post('/api/setup/token', { name }, {
+export function setupToken(masterToken, name, email) {
+  return api.post('/api/setup/token', { name, email }, {
     headers: { 'X-Setup-Token': masterToken }
   })
 }
@@ -98,8 +98,8 @@ export function listTokens() {
   return api.get('/api/admin/tokens')
 }
 
-export function createToken(name) {
-  return api.post('/api/admin/tokens', { name })
+export function createToken(name, email) {
+  return api.post('/api/admin/tokens', { name, email })
 }
 
 export function revokeToken(id) {

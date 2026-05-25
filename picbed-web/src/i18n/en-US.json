@@ -41,7 +41,9 @@
     "active": "Active",
     "created": "Created",
     "actions": "Actions",
-    "copyAndGo": "Copy & Go to Upload"
+    "copyAndGo": "Copy & Go to Upload",
+    "email": "Email",
+    "emailPlaceholder": "Optional: receive refresh notifications"
   },
   "gallery": {
     "title": "Gallery",
@@ -107,6 +109,9 @@
     "settings": "Upload Settings",
     "uploadSizeLimit": "Limit upload file size",
     "uploadSizeLimitMb": "Max file size",
+    "uploadSettings": "Upload Settings",
+    "tokenRefresh": "Auto Token Refresh",
+    "tokenRefreshCron": "Refresh Interval (Cron)",
     "settingsSaved": "Settings saved",
     "filterAll": "All",
     "filterPublished": "Published",

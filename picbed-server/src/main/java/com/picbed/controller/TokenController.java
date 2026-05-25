@@ -69,7 +69,7 @@ public class TokenController {
         }
 
         log.info("Creating initial admin token for '{}'", request.getName());
-        return ResponseEntity.ok(Result.success(tokenService.createToken(request.getName(), "ADMIN")));
+        return ResponseEntity.ok(Result.success(tokenService.createToken(request.getName(), "ADMIN", request.getEmail())));
     }
 
     @GetMapping("/api/admin/tokens")
@@ -95,7 +95,7 @@ public class TokenController {
                     .body(Result.error("Admin role required", 403));
         }
         String role = request.getRole() != null ? request.getRole() : "USER";
-        return ResponseEntity.ok(Result.success(tokenService.createToken(request.getName(), role)));
+        return ResponseEntity.ok(Result.success(tokenService.createToken(request.getName(), role, request.getEmail())));
     }
 
     @DeleteMapping("/api/admin/tokens/{id}")

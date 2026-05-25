@@ -31,6 +31,9 @@ public class Token {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
+    @Column(length = 255)
+    private String email;
+
     @PrePersist
     public void prePersist() {
         if (createdAt == null) {

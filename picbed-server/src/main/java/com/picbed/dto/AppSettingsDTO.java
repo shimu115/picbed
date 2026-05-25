@@ -13,4 +13,6 @@ public class AppSettingsDTO {
     @NotNull
     @Positive
     private Integer uploadSizeLimitMb;
+
+    private String tokenRefreshCron;
 }

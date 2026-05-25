@@ -12,4 +12,7 @@ public class TokenCreateRequest {
     private String name;
 
     private String role;
+
+    @Size(max = 255)
+    private String email;
 }

@@ -22,7 +22,7 @@ public class TokenService {
     private TokenRepository tokenRepository;
 
     @Transactional
-    public Map<String, Object> createToken(String name, String role) {
+    public Map<String, Object> createToken(String name, String role, String email) {
         String rawToken = TokenUtil.generateRawToken();
         String tokenHash = TokenUtil.hashToken(rawToken);
 
@@ -34,6 +34,9 @@ public class TokenService {
         token.setTokenHash(tokenHash);
         token.setRole(resolvedRole);
         token.setIsActive(true);
+        if (email != null && !email.isBlank()) {
+            token.setEmail(email.trim());
+        }
         tokenRepository.save(token);
 
         log.info("Created {} token '{}' (id={})", resolvedRole, name, token.getId());
@@ -42,6 +45,7 @@ public class TokenService {
         result.put("id", token.getId());
         result.put("name", token.getName());
         result.put("role", token.getRole());
+        result.put("email", token.getEmail());
         result.put("token", rawToken);
         result.put("createdAt", token.getCreatedAt());
         return result;
@@ -66,12 +70,34 @@ public class TokenService {
         return tokenRepository.findByTokenHash(TokenUtil.hashToken(rawToken));
     }
 
+    public List<Token> findAllActiveWithEmail() {
+        return tokenRepository.findByIsActiveTrueAndEmailIsNotNull();
+    }
+
+    @Transactional
+    public String refreshToken(Long tokenId) {
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new IllegalArgumentException("Token not found: " + tokenId));
+        if (!token.getIsActive()) {
+            throw new IllegalArgumentException("Token is not active: " + tokenId);
+        }
+
+        String newRawToken = TokenUtil.generateRawToken();
+        String newHash = TokenUtil.hashToken(newRawToken);
+        token.setTokenHash(newHash);
+        tokenRepository.save(token);
+
+        log.info("Refreshed token '{}' (id={})", token.getName(), token.getId());
+        return newRawToken;
+    }
+
     public List<Map<String, Object>> listTokens() {
         return tokenRepository.findByIsActiveTrue().stream().map(t -> {
             Map<String, Object> m = new HashMap<>();
             m.put("id", t.getId());
             m.put("name", t.getName());
             m.put("role", t.getRole());
+            m.put("email", t.getEmail());
             m.put("isActive", t.getIsActive());
             m.put("createdAt", t.getCreatedAt());
             m.put("expiresAt", t.getExpiresAt());
