@@ -6,6 +6,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const uploadSizeLimitEnabled = ref(false)
   const uploadSizeLimitMb = ref(50)
   const tokenRefreshCron = ref('0 0 2 */3 * ?')
+  const tokenAutoRefreshEnabled = ref(false)
   const loaded = ref(false)
 
   const maxUploadBytes = computed(() => {
@@ -20,6 +21,7 @@ export const useSettingsStore = defineStore('settings', () => {
       uploadSizeLimitEnabled.value = data.uploadSizeLimitEnabled
       uploadSizeLimitMb.value = data.uploadSizeLimitMb
       tokenRefreshCron.value = data.tokenRefreshCron || '0 0 2 */3 * ?'
+      tokenAutoRefreshEnabled.value = data.tokenAutoRefreshEnabled || false
       loaded.value = true
     } catch {
       // keep defaults
@@ -30,12 +32,14 @@ export const useSettingsStore = defineStore('settings', () => {
     uploadSizeLimitEnabled.value = data.uploadSizeLimitEnabled
     uploadSizeLimitMb.value = data.uploadSizeLimitMb
     if (data.tokenRefreshCron) tokenRefreshCron.value = data.tokenRefreshCron
+    if (data.tokenAutoRefreshEnabled !== undefined) tokenAutoRefreshEnabled.value = data.tokenAutoRefreshEnabled
   }
 
   return {
     uploadSizeLimitEnabled,
     uploadSizeLimitMb,
     tokenRefreshCron,
+    tokenAutoRefreshEnabled,
     maxUploadBytes,
     loaded,
     fetchSettings,

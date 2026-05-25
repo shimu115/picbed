@@ -36,11 +36,13 @@ CREATE TABLE IF NOT EXISTS app_settings (
     upload_size_limit_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     upload_size_limit_mb INT NOT NULL DEFAULT 50,
     token_refresh_cron VARCHAR(50) DEFAULT '0 0 2 */3 * ?',
+    token_auto_refresh_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id)
 );
 
 ALTER TABLE IF EXISTS app_settings ADD COLUMN IF NOT EXISTS token_refresh_cron VARCHAR(50) DEFAULT '0 0 2 */3 * ?';
+ALTER TABLE IF EXISTS app_settings ADD COLUMN IF NOT EXISTS token_auto_refresh_enabled BOOLEAN NOT NULL DEFAULT FALSE;
 
-MERGE INTO app_settings (id, upload_size_limit_enabled, upload_size_limit_mb, token_refresh_cron, updated_at)
-    KEY(id) VALUES (1, FALSE, 50, '0 0 2 */3 * ?', CURRENT_TIMESTAMP);
+MERGE INTO app_settings (id, upload_size_limit_enabled, upload_size_limit_mb, token_refresh_cron, token_auto_refresh_enabled, updated_at)
+    KEY(id) VALUES (1, FALSE, 50, '0 0 2 */3 * ?', FALSE, CURRENT_TIMESTAMP);

@@ -110,6 +110,18 @@ export function updateOwnEmail(email) {
   return api.put('/api/account/email', { email })
 }
 
+export function refreshOwnToken(sendEmail) {
+  return api.post('/api/account/refresh', { sendEmail })
+}
+
+export function adminRefreshToken(id) {
+  return api.post(`/api/admin/tokens/${id}/refresh`)
+}
+
+export function warnToken(id) {
+  return api.post(`/api/admin/tokens/${id}/warn`)
+}
+
 export function revokeToken(id) {
   return api.delete(`/api/admin/tokens/${id}`)
 }

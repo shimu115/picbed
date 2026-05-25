@@ -36,4 +36,25 @@ public class EmailService {
             log.error("Failed to send token refresh email to {}: {}", to, e.getMessage());
         }
     }
+
+    public void sendTokenCompromisedWarning(String to, String tokenName) {
+        if (mailSender == null) {
+            log.warn("Mail not configured, skipping warning email to {}", to);
+            return;
+        }
+        try {
+            SimpleMailMessage msg = new SimpleMailMessage();
+            msg.setTo(to);
+            msg.setSubject("PicBed Token Security Warning: " + tokenName);
+            msg.setText("Your PicBed token \"" + tokenName + "\" may have been compromised.\n\n"
+                    + "Please bind an email address and manually refresh your token immediately "
+                    + "to prevent unauthorized access. If you do not take action, your token "
+                    + "will be revoked during the next automatic refresh cycle.\n\n"
+                    + "To secure your token: log in and use the refresh function in settings.");
+            mailSender.send(msg);
+            log.info("Sent token compromised warning to {} for token '{}'", to, tokenName);
+        } catch (Exception e) {
+            log.error("Failed to send warning email to {}: {}", to, e.getMessage());
+        }
+    }
 }

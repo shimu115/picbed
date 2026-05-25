@@ -5,7 +5,7 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useTokenStore } from '@/stores/token'
 import { updateOwnEmail } from '@/api'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 
 const { t } = useI18n()
 const settingsStore = useSettingsStore()

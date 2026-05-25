@@ -11,6 +11,7 @@ const settingsStore = useSettingsStore()
 const enabled = ref(false)
 const limitMb = ref(50)
 const refreshCron = ref('0 0 2 */3 * ?')
+const autoRefreshEnabled = ref(false)
 const saving = ref(false)
 
 const cronPresets = [
@@ -24,6 +25,7 @@ onMounted(() => {
   enabled.value = settingsStore.uploadSizeLimitEnabled
   limitMb.value = settingsStore.uploadSizeLimitMb
   refreshCron.value = settingsStore.tokenRefreshCron
+  autoRefreshEnabled.value = settingsStore.tokenAutoRefreshEnabled
 })
 
 function applyPreset(cron) {
@@ -36,7 +38,8 @@ async function save() {
     const data = {
       uploadSizeLimitEnabled: enabled.value,
       uploadSizeLimitMb: limitMb.value,
-      tokenRefreshCron: refreshCron.value
+      tokenRefreshCron: refreshCron.value,
+      tokenAutoRefreshEnabled: autoRefreshEnabled.value
     }
     await updateSettings(data)
     settingsStore.applySettings(data)
@@ -88,6 +91,10 @@ async function save() {
         >
           {{ p.label }}
         </el-button>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">{{ t('manage.tokenAutoRefreshEnable') }}</span>
+        <el-switch v-model="autoRefreshEnabled" />
       </div>
     </div>
 

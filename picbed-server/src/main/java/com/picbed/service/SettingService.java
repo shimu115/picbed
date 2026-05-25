@@ -35,6 +35,7 @@ public class SettingService {
         dto.setUploadSizeLimitEnabled(s.getUploadSizeLimitEnabled());
         dto.setUploadSizeLimitMb(s.getUploadSizeLimitMb());
         dto.setTokenRefreshCron(s.getTokenRefreshCron());
+        dto.setTokenAutoRefreshEnabled(s.getTokenAutoRefreshEnabled());
         return dto;
     }
 
@@ -46,6 +47,7 @@ public class SettingService {
         if (dto.getTokenRefreshCron() != null && !dto.getTokenRefreshCron().isBlank()) {
             s.setTokenRefreshCron(dto.getTokenRefreshCron());
         }
+        s.setTokenAutoRefreshEnabled(dto.getTokenAutoRefreshEnabled());
         settingRepository.save(s);
 
         if (dto.getTokenRefreshCron() != null && !dto.getTokenRefreshCron().isBlank()
@@ -58,6 +60,11 @@ public class SettingService {
         }
 
         return getSettings();
+    }
+
+    public boolean isAutoRefreshEnabled() {
+        AppSetting s = getOrCreate();
+        return Boolean.TRUE.equals(s.getTokenAutoRefreshEnabled());
     }
 
     public String getTokenRefreshCron() {

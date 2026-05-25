@@ -46,7 +46,19 @@
     "emailPlaceholder": "请输入邮箱地址",
     "emailPrompt": "请设置邮箱以接收 Token 刷新通知，未设置邮箱的 Token 将在刷新时自动吊销",
     "setEmail": "设置邮箱",
-    "emailSaved": "邮箱已保存"
+    "emailSaved": "邮箱已保存",
+    "refreshToken": "刷新 Token",
+    "refreshOwnToken": "刷新我的 Token",
+    "refreshDesc": "刷新后将生成新的 Token，旧 Token 立即失效。",
+    "sendEmailOnRefresh": "将新 Token 发送到邮箱",
+    "noEmailCannotRefresh": "未设置邮箱，无法刷新 Token",
+    "refreshSuccess": "Token 已刷新",
+    "newTokenShown": "新 Token（请立即复制，关闭后将无法再次查看）",
+    "warnUser": "安全提醒",
+    "warnConfirm": "确定要向 \"{name}\" 的邮箱发送安全提醒吗？",
+    "warnSent": "安全提醒已发送",
+    "adminRefresh": "刷新",
+    "adminRefreshConfirm": "确定要刷新 \"{name}\" 的 Token 吗？新 Token 将自动发送到其邮箱。"
   },
   "gallery": {
     "title": "画廊",
@@ -115,6 +127,7 @@
     "uploadSettings": "上传设置",
     "tokenRefresh": "Token 自动刷新",
     "tokenRefreshCron": "刷新周期 (Cron)",
+    "tokenAutoRefreshEnable": "开启自动刷新",
     "settingsSaved": "设置已保存",
     "filterAll": "全部",
     "filterPublished": "已展示",

@@ -19,6 +19,9 @@ public class AppSetting {
     @Column(name = "token_refresh_cron", length = 50)
     private String tokenRefreshCron = "0 0 2 */3 * ?";
 
+    @Column(name = "token_auto_refresh_enabled", nullable = false)
+    private Boolean tokenAutoRefreshEnabled = false;
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -33,6 +36,9 @@ public class AppSetting {
 
     public String getTokenRefreshCron() { return tokenRefreshCron; }
     public void setTokenRefreshCron(String tokenRefreshCron) { this.tokenRefreshCron = tokenRefreshCron; }
+
+    public Boolean getTokenAutoRefreshEnabled() { return tokenAutoRefreshEnabled; }
+    public void setTokenAutoRefreshEnabled(Boolean tokenAutoRefreshEnabled) { this.tokenAutoRefreshEnabled = tokenAutoRefreshEnabled; }
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }

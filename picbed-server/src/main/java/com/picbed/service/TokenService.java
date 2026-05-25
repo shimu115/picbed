@@ -169,4 +169,52 @@ public class TokenService {
     public boolean hasAnyToken() {
         return tokenRepository.count() > 0;
     }
+
+    public boolean hasEmail(Long tokenId) {
+        Token token = tokenRepository.findById(tokenId).orElse(null);
+        return token != null && token.getEmail() != null && !token.getEmail().isBlank();
+    }
+
+    @Transactional
+    public String refreshOwnToken(Long tokenId, boolean sendEmail) {
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new IllegalArgumentException("Token not found: " + tokenId));
+        if (!token.getIsActive()) {
+            throw new IllegalArgumentException("Token is not active: " + tokenId);
+        }
+        if (token.getEmail() == null || token.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Cannot refresh token without an email address. Please set your email first.");
+        }
+
+        String newRawToken = TokenUtil.generateRawToken();
+        token.setTokenHash(TokenUtil.hashToken(newRawToken));
+        tokenRepository.save(token);
+
+        log.info("Self-refreshed token '{}' (id={})", token.getName(), token.getId());
+        return newRawToken;
+    }
+
+    @Transactional
+    public String adminRefreshToken(Long tokenId) {
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new IllegalArgumentException("Token not found: " + tokenId));
+        if (!token.getIsActive()) {
+            throw new IllegalArgumentException("Token is not active: " + tokenId);
+        }
+        if (token.getEmail() == null || token.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Token has no email set, cannot refresh");
+        }
+
+        String newRawToken = TokenUtil.generateRawToken();
+        token.setTokenHash(TokenUtil.hashToken(newRawToken));
+        tokenRepository.save(token);
+
+        log.info("Admin refreshed token '{}' (id={})", token.getName(), token.getId());
+        return newRawToken;
+    }
+
+    public String getTokenEmail(Long tokenId) {
+        Token token = tokenRepository.findById(tokenId).orElse(null);
+        return token != null ? token.getEmail() : null;
+    }
 }

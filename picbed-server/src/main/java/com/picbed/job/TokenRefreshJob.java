@@ -2,6 +2,7 @@ package com.picbed.job;
 
 import com.picbed.entity.Token;
 import com.picbed.service.EmailService;
+import com.picbed.service.SettingService;
 import com.picbed.service.TokenService;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
@@ -21,8 +22,15 @@ public class TokenRefreshJob implements Job {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private SettingService settingService;
+
     @Override
     public void execute(JobExecutionContext context) {
+        if (!settingService.isAutoRefreshEnabled()) {
+            log.debug("Auto refresh is disabled, skipping token refresh job");
+            return;
+        }
         log.info("Token refresh job started");
         List<Token> tokens = tokenService.findAllActive();
         if (tokens.isEmpty()) {

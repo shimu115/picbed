@@ -46,7 +46,19 @@
     "emailPlaceholder": "Enter email address",
     "emailPrompt": "Set your email to receive token refresh notifications. Tokens without email will be revoked on refresh.",
     "setEmail": "Set Email",
-    "emailSaved": "Email saved"
+    "emailSaved": "Email saved",
+    "refreshToken": "Refresh Token",
+    "refreshOwnToken": "Refresh My Token",
+    "refreshDesc": "A new token will be generated and the old one becomes invalid immediately.",
+    "sendEmailOnRefresh": "Send new token to email",
+    "noEmailCannotRefresh": "Cannot refresh: no email set for this token",
+    "refreshSuccess": "Token refreshed",
+    "newTokenShown": "New token (copy it now — it won't be shown again)",
+    "warnUser": "Security Warning",
+    "warnConfirm": "Send a security warning to \"{name}\" via email?",
+    "warnSent": "Security warning sent",
+    "adminRefresh": "Refresh",
+    "adminRefreshConfirm": "Refresh \"{name}\"'s token? The new token will be sent to their email."
   },
   "gallery": {
     "title": "Gallery",
@@ -115,6 +127,7 @@
     "uploadSettings": "Upload Settings",
     "tokenRefresh": "Auto Token Refresh",
     "tokenRefreshCron": "Refresh Interval (Cron)",
+    "tokenAutoRefreshEnable": "Enable auto refresh",
     "settingsSaved": "Settings saved",
     "filterAll": "All",
     "filterPublished": "Published",
