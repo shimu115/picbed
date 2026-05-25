@@ -122,6 +122,10 @@ export function warnToken(id) {
   return api.post(`/api/admin/tokens/${id}/warn`)
 }
 
+export function refreshAllTokens() {
+  return api.post('/api/admin/tokens/refresh-all')
+}
+
 export function revokeToken(id) {
   return api.delete(`/api/admin/tokens/${id}`)
 }

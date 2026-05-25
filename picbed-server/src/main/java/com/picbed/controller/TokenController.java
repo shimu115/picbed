@@ -219,4 +219,21 @@ public class TokenController {
         emailService.sendTokenCompromisedWarning(email, targetName);
         return ResponseEntity.ok(Result.success());
     }
+
+    @PostMapping("/api/admin/tokens/refresh-all")
+    public ResponseEntity<Result<Map<String, Object>>> refreshAllTokens(
+            @RequestHeader("X-Auth-Token") String authToken) {
+        Token requester = tokenService.findByRawToken(authToken).orElse(null);
+        if (requester == null || !"ADMIN".equalsIgnoreCase(requester.getRole())) {
+            return ResponseEntity.status(403)
+                    .body(Result.error("Admin role required", 403));
+        }
+        List<Map<String, String>> results = tokenService.refreshAllTokens();
+        for (Map<String, String> info : results) {
+            emailService.sendTokenRefresh(info.get("email"), info.get("name"), info.get("token"));
+        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("refreshed", results.size());
+        return ResponseEntity.ok(Result.success(data));
+    }
 }

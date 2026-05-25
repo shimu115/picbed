@@ -1,12 +1,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useTokenStore } from '@/stores/token'
-import { listTokens, createToken, revokeToken, updateTokenEmail, adminRefreshToken, warnToken, refreshOwnToken } from '@/api'
+import { listTokens, createToken, revokeToken, updateTokenEmail, adminRefreshToken, warnToken, refreshAllTokens } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { t } = useI18n()
-const tokenStore = useTokenStore()
 const tokens = ref([])
 const loading = ref(false)
 const newTokenName = ref('')
@@ -78,36 +76,26 @@ function cancelEditEmail() {
   editingEmailId.value = null
 }
 
-const showSelfRefreshDialog = ref(false)
-const selfRefreshSendEmail = ref(false)
-const selfRefreshing = ref(false)
-const selfRefreshToken = ref('')
+const refreshAllLoading = ref(false)
 
-function openSelfRefreshDialog() {
-  selfRefreshSendEmail.value = !!tokenStore.email
-  selfRefreshToken.value = ''
-  showSelfRefreshDialog.value = true
-}
-
-async function handleSelfRefresh() {
-  selfRefreshing.value = true
+async function handleRefreshAll() {
   try {
-    const res = await refreshOwnToken(selfRefreshSendEmail.value)
-    selfRefreshToken.value = res.data.data.token
-    const newToken = res.data.data.token
-    localStorage.setItem('auth_token', newToken)
-    tokenStore.setToken(newToken)
-    ElMessage.success(t('token.refreshSuccess'))
+    await ElMessageBox.confirm(
+      t('token.refreshAllConfirm'),
+      t('common.confirm'),
+      { type: 'warning', confirmButtonText: t('token.refreshAll'), cancelButtonText: t('common.cancel') }
+    )
+    refreshAllLoading.value = true
+    const res = await refreshAllTokens()
+    ElMessage.success(t('token.refreshAllSuccess', { count: res.data.data.refreshed }))
+    await loadTokens()
   } catch (e) {
-    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
-    showSelfRefreshDialog.value = false
+    if (e !== 'cancel' && e?.response?.data?.msg) {
+      ElMessage.error(e.response.data.msg)
+    }
   } finally {
-    selfRefreshing.value = false
+    refreshAllLoading.value = false
   }
-}
-
-function copySelfRefreshToken() {
-  copyToClipboard(selfRefreshToken.value)
 }
 
 const refreshingId = ref(null)
@@ -185,18 +173,6 @@ onUnmounted(() => {
 
 <template>
   <div class="token-panel">
-    <div class="self-refresh-row">
-      <el-button
-        size="small"
-        type="primary"
-        :disabled="!tokenStore.email"
-        @click="openSelfRefreshDialog"
-      >
-        {{ t('token.refreshOwnToken') }}
-      </el-button>
-      <span v-if="!tokenStore.email" class="no-email-tip">{{ t('token.noEmailCannotRefresh') }}</span>
-    </div>
-
     <div class="create-token">
       <el-input
         v-model="newTokenName"
@@ -212,6 +188,9 @@ onUnmounted(() => {
       />
       <el-button type="primary" @click="handleCreate" :disabled="!newTokenName.trim()">
         {{ t('token.generate') }}
+      </el-button>
+      <el-button type="primary" :loading="refreshAllLoading" @click="handleRefreshAll" style="margin-left: auto">
+        {{ t('token.refreshAll') }}
       </el-button>
     </div>
 
@@ -237,7 +216,7 @@ onUnmounted(() => {
       <el-table :data="tokens" v-loading="loading">
       <el-table-column prop="id" :label="t('token.id')" width="70" />
       <el-table-column prop="name" :label="t('token.name')" />
-      <el-table-column :label="t('token.email')" width="220">
+      <el-table-column :label="t('token.email')" width="260">
         <template #default="{ row }">
           <template v-if="editingEmailId === row.id">
             <el-input
@@ -308,63 +287,10 @@ onUnmounted(() => {
     </el-table>
     </div>
 
-    <el-dialog
-      v-model="showSelfRefreshDialog"
-      :title="t('token.refreshOwnToken')"
-      width="480px"
-      :close-on-click-modal="false"
-      @close="selfRefreshToken = ''"
-    >
-      <p class="refresh-desc">{{ t('token.refreshDesc') }}</p>
-      <el-checkbox
-        v-model="selfRefreshSendEmail"
-        :disabled="selfRefreshing"
-      >
-        {{ t('token.sendEmailOnRefresh') }}
-      </el-checkbox>
-      <div v-if="selfRefreshToken" class="generated-token-box" style="margin-top: 16px">
-        <p class="warning-text">{{ t('token.newTokenShown') }}</p>
-        <el-input :model-value="selfRefreshToken" readonly>
-          <template #append>
-            <el-button @click="copySelfRefreshToken">{{ t('common.copy') }}</el-button>
-          </template>
-        </el-input>
-      </div>
-      <template #footer>
-        <el-button @click="showSelfRefreshDialog = false" :disabled="selfRefreshing">
-          {{ selfRefreshToken ? t('common.close') : t('common.cancel') }}
-        </el-button>
-        <el-button
-          v-if="!selfRefreshToken"
-          type="primary"
-          :loading="selfRefreshing"
-          @click="handleSelfRefresh"
-        >
-          {{ t('token.refreshToken') }}
-        </el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <style scoped>
-.self-refresh-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #ebeef5;
-}
-.no-email-tip {
-  font-size: 12px;
-  color: #909399;
-}
-.refresh-desc {
-  font-size: 14px;
-  color: #606266;
-  margin-bottom: 12px;
-}
 .create-token {
   display: flex;
   gap: 10px;

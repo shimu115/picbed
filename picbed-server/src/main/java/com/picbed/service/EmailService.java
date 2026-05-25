@@ -2,6 +2,7 @@ package com.picbed.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,8 @@ public class EmailService {
 
     @Autowired(required = false)
     private JavaMailSender mailSender;
+    @Value("${spring.mail.username:}")
+    private String fromAddress;
 
     public boolean isConfigured() {
         return mailSender != null;
@@ -44,6 +47,7 @@ public class EmailService {
         }
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
+            msg.setFrom(fromAddress);
             msg.setTo(to);
             msg.setSubject("PicBed Token Security Warning: " + tokenName);
             msg.setText("Your PicBed token \"" + tokenName + "\" may have been compromised.\n\n"

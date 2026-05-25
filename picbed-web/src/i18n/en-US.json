@@ -58,7 +58,10 @@
     "warnConfirm": "Send a security warning to \"{name}\" via email?",
     "warnSent": "Security warning sent",
     "adminRefresh": "Refresh",
-    "adminRefreshConfirm": "Refresh \"{name}\"'s token? The new token will be sent to their email."
+    "adminRefreshConfirm": "Refresh \"{name}\"'s token? The new token will be sent to their email.",
+    "refreshAll": "Refresh Tokens",
+    "refreshAllConfirm": "Refresh ALL users' tokens? All tokens with email will be refreshed and new tokens sent via email.",
+    "refreshAllSuccess": "Refreshed {count} token(s)"
   },
   "gallery": {
     "title": "Gallery",

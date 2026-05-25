@@ -217,4 +217,25 @@ public class TokenService {
         Token token = tokenRepository.findById(tokenId).orElse(null);
         return token != null ? token.getEmail() : null;
     }
+
+    @Transactional
+    public List<Map<String, String>> refreshAllTokens() {
+        List<Token> tokens = tokenRepository.findByIsActiveTrue();
+        List<Map<String, String>> results = new java.util.ArrayList<>();
+        for (Token token : tokens) {
+            if (token.getEmail() != null && !token.getEmail().isBlank()) {
+                String newRawToken = TokenUtil.generateRawToken();
+                token.setTokenHash(TokenUtil.hashToken(newRawToken));
+                tokenRepository.save(token);
+                Map<String, String> info = new HashMap<>();
+                info.put("email", token.getEmail());
+                info.put("name", token.getName());
+                info.put("token", newRawToken);
+                results.add(info);
+                log.info("Batch refreshed token '{}' (id={})", token.getName(), token.getId());
+            }
+        }
+        log.info("Batch refresh completed: {} tokens refreshed", results.size());
+        return results;
+    }
 }
