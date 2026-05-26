@@ -49,6 +49,18 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
+  if (to.path === '/setup') {
+    try {
+      const res = await getStatus()
+      if (res.data?.data?.initialized) {
+        next('/')
+        return
+      }
+    } catch {
+      // backend unreachable, proceed anyway
+    }
+  }
+
   if (!statusChecked) {
     statusChecked = true
     try {
