@@ -3,11 +3,9 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { setupToken } from '@/api'
-import { useTokenStore } from '@/stores/token'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
-const tokenStore = useTokenStore()
 const { t } = useI18n()
 
 const masterKey = ref('')
@@ -18,12 +16,15 @@ const loading = ref(false)
 const error = ref('')
 
 async function handleSetup() {
-  loading.value = true
   error.value = ''
+  if (!tokenEmail.value.trim()) {
+    error.value = t('setup.emailRequired')
+    return
+  }
+  loading.value = true
   try {
     const res = await setupToken(masterKey.value, tokenName.value || 'Admin', tokenEmail.value.trim())
     generatedToken.value = res.data.data.token
-    tokenStore.setToken(generatedToken.value)
     ElMessage.success(t('setup.success'))
   } catch (e) {
     error.value = e.response?.data?.msg || t('setup.setupFailed')
@@ -44,7 +45,7 @@ function copyAndGo() {
     <h2>{{ t('setup.title') }}</h2>
     <p class="setup-desc">{{ t('setup.desc') }}</p>
 
-    <el-card v-if="!generatedToken" style="max-width: 500px">
+    <el-card v-if="!generatedToken" class="setup-card">
       <el-form @submit.prevent="handleSetup">
         <el-form-item :label="t('setup.masterKey')">
           <el-input v-model="masterKey" type="password" :placeholder="t('setup.masterKeyPlaceholder')" />
@@ -52,11 +53,12 @@ function copyAndGo() {
         <el-form-item :label="t('setup.tokenName')">
           <el-input v-model="tokenName" :placeholder="t('setup.tokenNamePlaceholder')" />
         </el-form-item>
-        <el-form-item :label="t('token.email')">
+        <el-form-item :label="t('token.email')" required>
           <el-input v-model="tokenEmail" :placeholder="t('token.emailPlaceholder')" />
+          <p class="email-hint">{{ t('setup.emailHint') }}</p>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSetup" :loading="loading" :disabled="!masterKey">
+          <el-button type="primary" @click="handleSetup" :loading="loading" :disabled="!masterKey || !tokenEmail.trim()">
             {{ t('setup.createToken') }}
           </el-button>
         </el-form-item>
@@ -79,13 +81,30 @@ function copyAndGo() {
 </template>
 
 <style scoped>
+.setup-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+}
 .setup-desc {
   color: #606266;
   margin-bottom: 20px;
   max-width: 500px;
+  text-align: center;
+}
+.setup-card {
+  max-width: 500px;
+  width: 100%;
 }
 .error-text {
   color: #f56c6c;
   font-size: 13px;
+}
+.email-hint {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
+  line-height: 1.5;
 }
 </style>

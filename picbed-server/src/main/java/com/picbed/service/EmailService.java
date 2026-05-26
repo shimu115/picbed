@@ -41,6 +41,27 @@ public class EmailService {
         }
     }
 
+    public void sendTokenCreated(String to, String tokenName, String token) {
+        if (mailSender == null) {
+            log.warn("Mail not configured, skipping setup email to {}", to);
+            return;
+        }
+        try {
+            SimpleMailMessage msg = new SimpleMailMessage();
+            msg.setTo(to);
+            msg.setFrom(fromAddress);
+            msg.setSubject("PicBed Token 已创建: " + tokenName);
+            msg.setText("您的 PicBed Token \"" + tokenName + "\" 已创建成功。\n\n"
+                    + "Token（请妥善保管，关闭后将无法再次查看）：\n"
+                    + token + "\n\n"
+                    + "请使用此 Token 登录 PicBed 并开始使用。");
+            mailSender.send(msg);
+            log.info("Sent token creation email to {} for token '{}'", to, tokenName);
+        } catch (Exception e) {
+            log.error("Failed to send token creation email to {}: {}", to, e.getMessage());
+        }
+    }
+
     public void sendTokenCompromisedWarning(String to, String tokenName) {
         if (mailSender == null) {
             log.warn("Mail not configured, skipping warning email to {}", to);

@@ -129,8 +129,18 @@ public class TokenController {
                     .body(Result.error("Tokens already exist, use admin API to create more", 400));
         }
 
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Result.error("Email is required for setup", 400));
+        }
+
         log.info("Creating initial admin token for '{}'", request.getName());
-        return ResponseEntity.ok(Result.success(tokenService.createToken(request.getName(), "ADMIN", request.getEmail())));
+        Map<String, Object> result = tokenService.createToken(request.getName(), "ADMIN", request.getEmail());
+        String rawToken = (String) result.get("token");
+
+        emailService.sendTokenCreated(request.getEmail(), request.getName(), rawToken);
+
+        return ResponseEntity.ok(Result.success(result));
     }
 
     @GetMapping("/api/admin/tokens")

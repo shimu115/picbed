@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '@/stores/settings'
 import { updateSettings } from '@/api'
 import { ElMessage } from 'element-plus'
+import { WarningFilled } from '@element-plus/icons-vue'
 
 const { t } = useI18n()
 const settingsStore = useSettingsStore()
@@ -75,7 +76,14 @@ async function save() {
     </div>
 
     <div class="setting-section">
-      <h4 class="section-title">{{ t('manage.tokenRefresh') }}</h4>
+      <h4 class="section-title">
+        {{ t('manage.tokenRefresh') }}
+        <el-popover placement="top" :width="280" trigger="hover" :content="t('manage.tokenRefreshBetaWarn')">
+          <template #reference>
+            <el-icon class="beta-warn-icon"><WarningFilled /></el-icon>
+          </template>
+        </el-popover>
+      </h4>
       <div class="setting-row">
         <span class="setting-label">{{ t('manage.tokenRefreshCron') }}</span>
         <el-input v-model="refreshCron" size="small" style="width: 200px" placeholder="0 0 0 */3 * ?" />
@@ -120,6 +128,14 @@ async function save() {
   margin: 0 0 12px 0;
   padding-bottom: 8px;
   border-bottom: 1px solid #ebeef5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.beta-warn-icon {
+  color: #e6a23c;
+  font-size: 16px;
+  cursor: pointer;
 }
 .setting-section {
   margin-bottom: 20px;
