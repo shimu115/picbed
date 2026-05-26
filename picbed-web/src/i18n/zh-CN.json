@@ -157,7 +157,12 @@
     "success": "Token 创建成功",
     "successDesc": "Token 已发送至您的邮箱，请查收后手动设置 Token。下方 Token 仅显示一次，请立即复制保管。",
     "emailHint": "请使用真实邮箱，Token 将发送至此邮箱。后续 Token 刷新等重要通知也将通过此邮箱发送。",
-    "emailRequired": "请输入邮箱地址"
+    "emailRequired": "请输入邮箱地址",
+    "emailUsernamePlaceholder": "邮箱用户名",
+    "emailDomainPlaceholder": "选择邮箱",
+    "emailDomainOther": "其他",
+    "emailDomainCustomPlaceholder": "请输入邮箱域名，如 example.com",
+    "emailDomainOtherWarn": "其他邮箱可能无法收到邮件，请谨慎使用。若未收到邮件，请检查垃圾邮件箱。"
   },
   "error": {
     "invalidToken": "Token 无效或已过期",

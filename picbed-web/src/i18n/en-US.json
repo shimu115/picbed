@@ -157,7 +157,12 @@
     "success": "Token Created",
     "successDesc": "The token has been sent to your email. Please check your inbox and set the token manually. The token below is shown only once — copy it now.",
     "emailHint": "Please use a real email address. The token will be sent to this email, along with important notifications like token refresh.",
-    "emailRequired": "Email is required"
+    "emailRequired": "Email is required",
+    "emailUsernamePlaceholder": "Email username",
+    "emailDomainPlaceholder": "Select domain",
+    "emailDomainOther": "Other",
+    "emailDomainCustomPlaceholder": "Enter domain, e.g. example.com",
+    "emailDomainOtherWarn": "Other email providers may not receive emails. Use with caution. If not received, please check your spam folder."
   },
   "error": {
     "invalidToken": "Invalid or expired token",

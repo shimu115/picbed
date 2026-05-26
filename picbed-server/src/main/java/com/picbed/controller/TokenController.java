@@ -9,6 +9,7 @@ import com.picbed.dto.TokenEmailUpdateRequest;
 import com.picbed.dto.TokenRefreshRequest;
 import com.picbed.dto.VerifyCodeRequest;
 import com.picbed.entity.Token;
+import com.picbed.repository.EmailDomainRepository;
 import com.picbed.service.EmailService;
 import com.picbed.service.EmailVerificationService;
 import com.picbed.service.TokenService;
@@ -34,11 +35,21 @@ public class TokenController {
     private EmailService emailService;
     @Autowired
     private EmailVerificationService emailVerificationService;
+    @Autowired
+    private EmailDomainRepository emailDomainRepository;
 
     @GetMapping("/api/public/status")
     public ResponseEntity<Result<Map<String, Object>>> getStatus() {
         boolean initialized = tokenService.hasAnyToken();
         return ResponseEntity.ok(Result.success(Map.of("initialized", initialized)));
+    }
+
+    @GetMapping("/api/public/email-domains")
+    public ResponseEntity<Result<List<String>>> getEmailDomains() {
+        List<String> domains = emailDomainRepository.findAll().stream()
+                .map(d -> d.getDomain())
+                .toList();
+        return ResponseEntity.ok(Result.success(domains));
     }
 
     @GetMapping("/api/verify")

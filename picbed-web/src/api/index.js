@@ -34,6 +34,10 @@ export function getStatus() {
   return api.get('/api/public/status')
 }
 
+export function getEmailDomains() {
+  return api.get('/api/public/email-domains')
+}
+
 // Public APIs
 export function getPublicImages(page = 0, size = 20) {
   return api.get('/api/public/images', { params: { page, size } })

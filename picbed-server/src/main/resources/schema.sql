@@ -59,3 +59,12 @@ CREATE TABLE IF NOT EXISTS email_attempt_log (
     token_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS email_domains (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    domain VARCHAR(100) NOT NULL UNIQUE
+);
+
+MERGE INTO email_domains (id, domain) KEY(id) VALUES (1, 'qq.com');
+MERGE INTO email_domains (id, domain) KEY(id) VALUES (2, 'outlook.com');
+MERGE INTO email_domains (id, domain) KEY(id) VALUES (3, '163.com');
