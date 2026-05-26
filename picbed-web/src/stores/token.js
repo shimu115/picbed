@@ -19,7 +19,7 @@ export const useTokenStore = defineStore('token', () => {
     if (!hasToken.value) {
       isValid.value = false
       role.value = ''
-      return
+      return false
     }
     try {
       const res = await verifyToken()
@@ -27,11 +27,13 @@ export const useTokenStore = defineStore('token', () => {
       role.value = res.data?.data?.role || ''
       tokenId.value = res.data?.data?.id || null
       email.value = res.data?.data?.email || ''
+      return isValid.value
     } catch {
       isValid.value = false
       role.value = ''
       email.value = ''
       clearToken()
+      return false
     }
   }
 
@@ -39,10 +41,10 @@ export const useTokenStore = defineStore('token', () => {
     email.value = val
   }
 
-  function setToken(rawToken) {
+  async function setToken(rawToken) {
     token.value = rawToken
     localStorage.setItem('auth_token', rawToken)
-    validateToken()
+    return await validateToken()
   }
 
   function clearToken() {

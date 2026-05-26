@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { ElMessage } from 'element-plus'
+import i18n from '@/i18n'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '',
@@ -18,6 +20,7 @@ api.interceptors.response.use(
   error => {
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token')
+      ElMessage.error(i18n.global.t('error.invalidToken'))
       window.dispatchEvent(new CustomEvent('auth-token-expired'))
     }
     return Promise.reject(error)

@@ -8,11 +8,13 @@ const tokenStore = useTokenStore()
 const showDialog = ref(false)
 const inputToken = ref('')
 
-function saveToken() {
+async function saveToken() {
   if (inputToken.value.trim()) {
-    tokenStore.setToken(inputToken.value.trim())
-    showDialog.value = false
-    inputToken.value = ''
+    const ok = await tokenStore.setToken(inputToken.value.trim())
+    if (ok) {
+      showDialog.value = false
+      inputToken.value = ''
+    }
   }
 }
 
@@ -39,6 +41,8 @@ function removeToken() {
     <el-dialog v-model="showDialog" :title="t('token.setAuthToken')" width="90%" style="max-width: 420px">
       <el-input
         v-model="inputToken"
+        type="password"
+        show-password
         :placeholder="t('token.pasteToken')"
         clearable
         @keyup.enter="saveToken"
