@@ -1,8 +1,10 @@
 package com.picbed.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import java.time.LocalDateTime;
 
+@Data
 @Entity
 @Table(name = "email_verification")
 public class EmailVerification {
@@ -19,16 +21,4 @@ public class EmailVerification {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
-
-    public Long getTokenId() { return tokenId; }
-    public void setTokenId(Long tokenId) { this.tokenId = tokenId; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

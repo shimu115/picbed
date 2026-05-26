@@ -1,8 +1,10 @@
 package com.picbed.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import java.time.LocalDateTime;
 
+@Data
 @Entity
 @Table(name = "email_attempt_log")
 public class EmailAttemptLog {
@@ -16,13 +18,4 @@ public class EmailAttemptLog {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Long getTokenId() { return tokenId; }
-    public void setTokenId(Long tokenId) { this.tokenId = tokenId; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

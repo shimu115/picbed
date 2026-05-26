@@ -1,8 +1,10 @@
 package com.picbed.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import java.time.LocalDateTime;
 
+@Data
 @Entity
 @Table(name = "app_settings")
 public class AppSetting {
@@ -24,24 +26,6 @@ public class AppSetting {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Boolean getUploadSizeLimitEnabled() { return uploadSizeLimitEnabled; }
-    public void setUploadSizeLimitEnabled(Boolean uploadSizeLimitEnabled) { this.uploadSizeLimitEnabled = uploadSizeLimitEnabled; }
-
-    public Integer getUploadSizeLimitMb() { return uploadSizeLimitMb; }
-    public void setUploadSizeLimitMb(Integer uploadSizeLimitMb) { this.uploadSizeLimitMb = uploadSizeLimitMb; }
-
-    public String getTokenRefreshCron() { return tokenRefreshCron; }
-    public void setTokenRefreshCron(String tokenRefreshCron) { this.tokenRefreshCron = tokenRefreshCron; }
-
-    public Boolean getTokenAutoRefreshEnabled() { return tokenAutoRefreshEnabled; }
-    public void setTokenAutoRefreshEnabled(Boolean tokenAutoRefreshEnabled) { this.tokenAutoRefreshEnabled = tokenAutoRefreshEnabled; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     @PrePersist
     @PreUpdate
