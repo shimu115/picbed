@@ -39,8 +39,13 @@ export function getEmailDomains() {
 }
 
 // Public APIs
-export function getPublicImages(page = 0, size = 20) {
-  return api.get('/api/public/images', { params: { page, size } })
+export function getPublicImages(page = 0, size = 20, search = '', searchType = 'filename') {
+  const params = { page, size }
+  if (search) {
+    params.search = search
+    params.searchType = searchType
+  }
+  return api.get('/api/public/images', { params })
 }
 
 export function getPublicImage(id) {
@@ -64,9 +69,13 @@ export function getUploadSignature(filename, contentType, md5) {
 }
 
 // Admin - images
-export function getAdminImages(page = 0, size = 20, published) {
+export function getAdminImages(page = 0, size = 20, published, search = '', searchType = 'filename') {
   const params = { page, size }
   if (published !== undefined) params.published = published
+  if (search) {
+    params.search = search
+    params.searchType = searchType
+  }
   return api.get('/api/admin/images', { params })
 }
 

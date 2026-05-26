@@ -84,7 +84,10 @@
     "download": "Download",
     "delete": "Delete",
     "deleteConfirm": "Delete \"{name}\"?",
-    "deleteSuccess": "Deleted"
+    "deleteSuccess": "Deleted",
+    "searchPlaceholder": "Search by keyword",
+    "searchByFilename": "Filename",
+    "searchByUsername": "Username"
   },
   "upload": {
     "title": "Upload Images",
@@ -143,7 +146,10 @@
     "settingsSaved": "Settings saved",
     "filterAll": "All",
     "filterPublished": "Published",
-    "filterUnpublished": "Unpublished"
+    "filterUnpublished": "Unpublished",
+    "searchPlaceholder": "Search by keyword",
+    "searchByFilename": "Filename",
+    "searchByUsername": "Username"
   },
   "setup": {
     "title": "Initial Setup",

@@ -29,8 +29,10 @@ public class ImageController {
     @GetMapping("/api/public/images")
     public ResponseEntity<Result<Map<String, Object>>> listImages(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Page<ImageDTO> result = imageService.listPublishedImages(page, size);
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "filename") String searchType) {
+        Page<ImageDTO> result = imageService.listPublishedImages(page, size, search, searchType);
         return ResponseEntity.ok(Result.success(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),
@@ -50,10 +52,12 @@ public class ImageController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) Boolean published,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "filename") String searchType,
             HttpServletRequest request) {
         Long tokenId = (Long) request.getAttribute("tokenId");
         String tokenRole = (String) request.getAttribute("tokenRole");
-        Page<ImageDTO> result = imageService.listImagesByOwner(page, size, tokenId, tokenRole, published);
+        Page<ImageDTO> result = imageService.listImagesByOwner(page, size, tokenId, tokenRole, published, search, searchType);
         return ResponseEntity.ok(Result.success(Map.of(
                 "content", result.getContent(),
                 "totalElements", result.getTotalElements(),

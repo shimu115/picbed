@@ -15,4 +15,9 @@ public class BatchPublishRequest {
 
     @NotNull
     private Boolean published;
+
+    public List<Long> getIds() { return ids; }
+    public void setIds(List<Long> ids) { this.ids = ids; }
+    public Boolean getPublished() { return published; }
+    public void setPublished(Boolean published) { this.published = published; }
 }

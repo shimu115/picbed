@@ -57,29 +57,83 @@ public class ImageService {
         return saved;
     }
 
-    public Page<ImageDTO> listPublishedImages(int page, int size) {
-        Page<ImageInfo> result = imageRepository.findByIsPublishedOrderByCreatedAtDesc(true,
-                PageRequest.of(page, size));
+    public Page<ImageDTO> listPublishedImages(int page, int size, String search, String searchType) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<ImageInfo> result;
+        if (search != null && !search.isBlank()) {
+            if ("username".equals(searchType)) {
+                result = searchByUploaderName(search, true, pageRequest);
+            } else {
+                result = imageRepository.findByIsPublishedTrueAndFilenameContainingIgnoreCaseOrderByCreatedAtDesc(search, pageRequest);
+            }
+        } else {
+            result = imageRepository.findByIsPublishedOrderByCreatedAtDesc(true, pageRequest);
+        }
         return toDtoPage(result);
     }
 
-    public Page<ImageDTO> listImagesByOwner(int page, int size, Long tokenId, String role, Boolean published) {
+    public Page<ImageDTO> listImagesByOwner(int page, int size, Long tokenId, String role, Boolean published,
+                                            String search, String searchType) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<ImageInfo> result;
-        if ("ADMIN".equalsIgnoreCase(role)) {
-            if (published != null) {
-                result = imageRepository.findByIsPublishedOrderByCreatedAtDesc(published, pageRequest);
+
+        if (search != null && !search.isBlank()) {
+            if ("username".equals(searchType)) {
+                result = searchByUploaderName(search, published, pageRequest);
+                // For non-admin, further filter by owner
+                if (!"ADMIN".equalsIgnoreCase(role)) {
+                    result = filterByOwner(result, tokenId, pageRequest);
+                }
+                return toDtoPage(result);
+            }
+            // Filename search
+            if ("ADMIN".equalsIgnoreCase(role)) {
+                if (published != null) {
+                    result = imageRepository.findByIsPublishedAndFilenameContainingIgnoreCaseOrderByCreatedAtDesc(published, search, pageRequest);
+                } else {
+                    result = imageRepository.findByFilenameContainingIgnoreCaseOrderByCreatedAtDesc(search, pageRequest);
+                }
             } else {
-                result = imageRepository.findAllByOrderByCreatedAtDesc(pageRequest);
+                // Non-admin filename search — filter by owner afterwards
+                result = imageRepository.findByFilenameContainingIgnoreCaseOrderByCreatedAtDesc(search, pageRequest);
+                result = filterByOwner(result, tokenId, pageRequest);
             }
         } else {
-            if (published != null) {
-                result = imageRepository.findByTokenIdAndIsPublishedOrderByCreatedAtDesc(tokenId, published, pageRequest);
+            if ("ADMIN".equalsIgnoreCase(role)) {
+                if (published != null) {
+                    result = imageRepository.findByIsPublishedOrderByCreatedAtDesc(published, pageRequest);
+                } else {
+                    result = imageRepository.findAllByOrderByCreatedAtDesc(pageRequest);
+                }
             } else {
-                result = imageRepository.findByTokenIdOrderByCreatedAtDesc(tokenId, pageRequest);
+                if (published != null) {
+                    result = imageRepository.findByTokenIdAndIsPublishedOrderByCreatedAtDesc(tokenId, published, pageRequest);
+                } else {
+                    result = imageRepository.findByTokenIdOrderByCreatedAtDesc(tokenId, pageRequest);
+                }
             }
         }
         return toDtoPage(result);
+    }
+
+    private Page<ImageInfo> searchByUploaderName(String name, Boolean published, PageRequest pageRequest) {
+        List<Long> tokenIds = tokenRepository.findByNameContainingIgnoreCase(name).stream()
+                .map(t -> t.getId())
+                .toList();
+        if (tokenIds.isEmpty()) {
+            return Page.empty(pageRequest);
+        }
+        if (published != null) {
+            return imageRepository.findByTokenIdInAndIsPublishedOrderByCreatedAtDesc(tokenIds, published, pageRequest);
+        }
+        return imageRepository.findByTokenIdInOrderByCreatedAtDesc(tokenIds, pageRequest);
+    }
+
+    private Page<ImageInfo> filterByOwner(Page<ImageInfo> page, Long tokenId, PageRequest pageRequest) {
+        List<ImageInfo> filtered = page.getContent().stream()
+                .filter(img -> tokenId.equals(img.getTokenId()))
+                .toList();
+        return new PageImpl<>(filtered, pageRequest, filtered.size());
     }
 
     private Page<ImageDTO> toDtoPage(Page<ImageInfo> page) {

@@ -19,6 +19,8 @@ const page = ref(0)
 const pageSize = ref(20)
 const selectMode = ref(false)
 const publishedFilter = ref(undefined)
+const searchText = ref('')
+const searchType = ref('filename')
 const previewImage = ref(null)
 const showPreview = ref(false)
 
@@ -36,12 +38,19 @@ function canTogglePublish(img) {
 async function loadImages() {
   loading.value = true
   try {
-    const res = await getAdminImages(page.value, pageSize.value, publishedFilter.value)
+    const res = await getAdminImages(page.value, pageSize.value, publishedFilter.value, searchText.value.trim(), searchType.value)
     images.value = res.data.data.content
     total.value = res.data.data.totalElements
   } finally {
     loading.value = false
   }
+}
+
+function handleSearch() {
+  page.value = 0
+  selection.value = []
+  selectMode.value = false
+  loadImages()
 }
 
 function onFilterChange() {
@@ -212,8 +221,27 @@ onMounted(loadImages)
 
 <template>
   <div class="image-table">
-    <!-- Toolbar: filter + batch actions (desktop) -->
+    <!-- Toolbar: search + filter + batch actions (desktop) -->
     <div class="toolbar">
+      <div class="toolbar-search">
+        <el-input
+          v-model="searchText"
+          :placeholder="t('manage.searchPlaceholder')"
+          class="search-input"
+          clearable
+          size="small"
+          @keyup.enter="handleSearch"
+          @clear="handleSearch"
+        >
+          <template #prefix>
+            <el-icon><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></el-icon>
+          </template>
+        </el-input>
+        <el-radio-group v-model="searchType" @change="handleSearch" size="small">
+          <el-radio-button value="filename">{{ t('manage.searchByFilename') }}</el-radio-button>
+          <el-radio-button value="username">{{ t('manage.searchByUsername') }}</el-radio-button>
+        </el-radio-group>
+      </div>
       <el-select
         v-model="publishedFilter"
         :placeholder="t('manage.filterAll')"
@@ -373,6 +401,14 @@ onMounted(loadImages)
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+.toolbar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.search-input {
+  width: 200px;
 }
 
 .toolbar-actions {

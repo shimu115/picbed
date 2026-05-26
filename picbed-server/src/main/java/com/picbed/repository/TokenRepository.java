@@ -19,5 +19,7 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
     List<Token> findByIsActiveTrueAndEmailIsNotNull();
 
     boolean existsByEmailAndIsActiveTrue(String email);
+
+    List<Token> findByNameContainingIgnoreCase(String name);
 }
 
