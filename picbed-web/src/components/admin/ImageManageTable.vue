@@ -341,11 +341,11 @@ onMounted(loadImages)
             <span>{{ img.contentType }}</span>
             <span>{{ fileSizeLabel(img.fileSize) }}</span>
             <span v-if="img.uploadedBy" class="card-uploader">{{ img.uploadedBy }}</span>
-            <span class="card-publish-status">
-              <el-text :type="img.isPublished ? 'success' : 'warning'" size="small">{{ img.isPublished ? t('manage.published') : t('manage.unpublished') }}</el-text>
-            </span>
           </div>
-          <div class="card-date">{{ formatDate(img.createdAt) }}</div>
+          <div class="card-date">
+            <span>{{ formatDate(img.createdAt) }}</span>
+            <el-text :type="img.isPublished ? 'success' : 'primary'" size="small">{{ img.isPublished ? t('manage.published') : t('manage.unpublished') }}</el-text>
+          </div>
           <div v-if="!selectMode" class="card-actions">
             <el-button type="primary" size="small" @click="copyUrl(img.ossUrl)" plain>
               <el-icon><DocumentCopy /></el-icon>
@@ -511,11 +511,10 @@ onMounted(loadImages)
   color: #409eff;
   font-weight: 500;
 }
-.card-publish-status {
-  font-size: 12px;
-  color: #909399;
-}
 .card-date {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 11px;
   color: #c0c4cc;
 }
