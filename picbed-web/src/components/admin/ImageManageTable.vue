@@ -341,6 +341,9 @@ onMounted(loadImages)
             <span>{{ img.contentType }}</span>
             <span>{{ fileSizeLabel(img.fileSize) }}</span>
             <span v-if="img.uploadedBy" class="card-uploader">{{ img.uploadedBy }}</span>
+            <span class="card-publish-status">
+              <el-text :type="img.isPublished ? 'success' : 'warning'" size="small">{{ img.isPublished ? t('manage.published') : t('manage.unpublished') }}</el-text>
+            </span>
           </div>
           <div class="card-date">{{ formatDate(img.createdAt) }}</div>
           <div v-if="!selectMode" class="card-actions">
@@ -353,13 +356,15 @@ onMounted(loadImages)
               placement="top"
               :disabled="canTogglePublish(img)"
             >
-              <el-switch
-                :model-value="img.isPublished"
-                :disabled="!canTogglePublish(img)"
+              <el-button
                 size="small"
-                @click.stop
-                @change="handleTogglePublish(img)"
-              />
+                :type="img.isPublished ? 'warning' : 'success'"
+                plain
+                :disabled="!canTogglePublish(img)"
+                @click.stop="handleTogglePublish(img)"
+              >
+                {{ img.isPublished ? t('manage.unpublish') : t('manage.publish') }}
+              </el-button>
             </el-tooltip>
           </div>
         </div>
@@ -505,6 +510,10 @@ onMounted(loadImages)
 .card-uploader {
   color: #409eff;
   font-weight: 500;
+}
+.card-publish-status {
+  font-size: 12px;
+  color: #909399;
 }
 .card-date {
   font-size: 11px;

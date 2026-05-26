@@ -132,6 +132,7 @@
     "deleteSuccess": "Deleted",
     "published": "Published",
     "publish": "Publish",
+    "unpublished": "Unpublished",
     "unpublish": "Unpublish",
     "batchPublish": "Publish ({count})",
     "batchUnpublish": "Unpublish ({count})",
