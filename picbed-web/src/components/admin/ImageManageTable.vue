@@ -341,13 +341,6 @@ onMounted(loadImages)
             <span>{{ img.contentType }}</span>
             <span>{{ fileSizeLabel(img.fileSize) }}</span>
             <span v-if="img.uploadedBy" class="card-uploader">{{ img.uploadedBy }}</span>
-            <el-switch
-              :model-value="img.isPublished"
-              :disabled="!canTogglePublish(img)"
-              size="small"
-              @click.stop
-              @change="handleTogglePublish(img)"
-            />
           </div>
           <div class="card-date">{{ formatDate(img.createdAt) }}</div>
           <div v-if="!selectMode" class="card-actions">
@@ -355,6 +348,19 @@ onMounted(loadImages)
               <el-icon><DocumentCopy /></el-icon>
             </el-button>
             <el-button size="small" type="danger" plain @click="handleDelete(img)">{{ t('manage.delete') }}</el-button>
+            <el-tooltip
+              :content="t('manage.cannotTogglePublish')"
+              placement="top"
+              :disabled="canTogglePublish(img)"
+            >
+              <el-switch
+                :model-value="img.isPublished"
+                :disabled="!canTogglePublish(img)"
+                size="small"
+                @click.stop
+                @change="handleTogglePublish(img)"
+              />
+            </el-tooltip>
           </div>
         </div>
       </div>
@@ -508,6 +514,7 @@ onMounted(loadImages)
   display: flex;
   gap: 8px;
   margin-top: 4px;
+  align-items: center;
 }
 .card-actions .el-button {
   padding: 4px 8px;

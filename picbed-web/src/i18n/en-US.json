@@ -135,6 +135,7 @@
     "unpublish": "Unpublish",
     "batchPublish": "Publish ({count})",
     "batchUnpublish": "Unpublish ({count})",
+    "cannotTogglePublish": "Cannot modify images uploaded by other users",
     "batchPublishSuccess": "Updated {count} images",
     "settings": "Upload Settings",
     "uploadSizeLimit": "Limit upload file size",

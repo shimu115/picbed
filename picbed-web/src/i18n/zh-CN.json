@@ -135,6 +135,7 @@
     "unpublish": "取消展示",
     "batchPublish": "批量展示 ({count})",
     "batchUnpublish": "批量取消展示 ({count})",
+    "cannotTogglePublish": "无法操作其他用户上传的图片",
     "batchPublishSuccess": "已更新 {count} 张图片",
     "settings": "上传设置",
     "uploadSizeLimit": "限制上传文件大小",
