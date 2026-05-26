@@ -344,7 +344,7 @@ onMounted(loadImages)
           </div>
           <div class="card-date">
             <span>{{ formatDate(img.createdAt) }}</span>
-            <el-text :type="img.isPublished ? 'success' : 'primary'" size="small">{{ img.isPublished ? t('manage.published') : t('manage.unpublished') }}</el-text>
+            <el-text :type="img.isPublished ? 'success' : 'warning'" size="small">{{ img.isPublished ? t('manage.published') : t('manage.unpublished') }}</el-text>
           </div>
           <div v-if="!selectMode" class="card-actions">
             <el-button type="primary" size="small" @click="copyUrl(img.ossUrl)" plain>
