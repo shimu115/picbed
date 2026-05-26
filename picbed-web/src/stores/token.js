@@ -9,6 +9,7 @@ export const useTokenStore = defineStore('token', () => {
   const tokenId = ref(null)
   const email = ref('')
   const isValid = ref(false)
+  const pendingEmailChange = ref(false)
   const router = useRouter()
 
   const hasToken = computed(() => token.value.length > 0)
@@ -41,6 +42,10 @@ export const useTokenStore = defineStore('token', () => {
     email.value = val
   }
 
+  function setPendingEmailChange(val) {
+    pendingEmailChange.value = val
+  }
+
   async function setToken(rawToken) {
     token.value = rawToken
     localStorage.setItem('auth_token', rawToken)
@@ -66,5 +71,5 @@ export const useTokenStore = defineStore('token', () => {
     clearToken()
   })
 
-  return { token, role, tokenId, email, isValid, hasToken, isAdmin, emailMissing, setToken, clearToken, validateToken, setEmail }
+  return { token, role, tokenId, email, isValid, pendingEmailChange, hasToken, isAdmin, emailMissing, setToken, clearToken, validateToken, setEmail, setPendingEmailChange }
 })

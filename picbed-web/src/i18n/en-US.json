@@ -68,7 +68,8 @@
     "adminRefreshConfirm": "Refresh \"{name}\"'s token? The new token will be sent to their email.",
     "verifyOldEmail": "Verify Old Email",
     "currentEmail": "Current email",
-    "verify": "Verify"
+    "verify": "Verify",
+    "ignore": "Ignore"
   },
   "gallery": {
     "title": "Gallery",
@@ -144,6 +145,10 @@
     "tokenAutoRefreshEnable": "Enable auto refresh",
     "tokenRefreshBetaWarn": "This feature is in beta. With many users, your email server IP may be blacklisted. Use with caution.",
     "settingsSaved": "Settings saved",
+    "emailSettings": "Email Settings",
+    "modifyEmail": "Modify Email",
+    "emailNotSet": "Not set",
+    "emailRealHint": "Please use a real email address. Important notifications will be sent to this email.",
     "filterAll": "All",
     "filterPublished": "Published",
     "filterUnpublished": "Unpublished",

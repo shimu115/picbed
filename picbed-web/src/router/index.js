@@ -31,6 +31,12 @@ const routes = [
     name: 'ImageView',
     component: () => import('@/views/ImageView.vue'),
     meta: { title: 'Image Detail', requiresToken: false }
+  },
+  {
+    path: '/email/verify',
+    name: 'EmailVerify',
+    component: () => import('@/views/EmailVerifyView.vue'),
+    meta: { title: 'Email Verify', requiresToken: true }
   }
 ]
 
