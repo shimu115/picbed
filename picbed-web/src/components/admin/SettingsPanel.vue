@@ -90,15 +90,17 @@ async function save() {
       </div>
       <div class="setting-row">
         <span class="setting-label"></span>
-        <el-button
-          v-for="p in cronPresets"
-          :key="p.cron"
-          size="small"
-          :type="refreshCron === p.cron ? 'primary' : 'default'"
-          @click="applyPreset(p.cron)"
-        >
-          {{ p.label }}
-        </el-button>
+        <div class="cron-presets">
+          <el-button
+            v-for="p in cronPresets"
+            :key="p.cron"
+            size="small"
+            :type="refreshCron === p.cron ? 'primary' : 'default'"
+            @click="applyPreset(p.cron)"
+          >
+            {{ p.label }}
+          </el-button>
+        </div>
       </div>
       <div class="setting-row">
         <span class="setting-label">{{ t('manage.tokenAutoRefreshEnable') }}</span>
@@ -156,28 +158,19 @@ async function save() {
   font-size: 13px;
   color: #909399;
 }
-</style>
+.cron-presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.cron-presets .el-button {
+  margin: 0;
+}
 
-<style scoped>
-.settings-panel {
-  background: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  border: 1px solid #e4e7ed;
-}
-.setting-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.setting-label {
-  font-size: 14px;
-  color: #303133;
-  min-width: 120px;
-}
-.setting-unit {
-  font-size: 13px;
-  color: #909399;
+@media (max-width: 767px) {
+  .cron-presets {
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
 }
 </style>
