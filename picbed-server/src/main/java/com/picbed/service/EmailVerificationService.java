@@ -75,17 +75,13 @@ public class EmailVerificationService {
 
     @Transactional
     public void verifyCode(Long tokenId, String email, String code) {
-        checkRateLimit(tokenId);
-
         EmailVerification ev = verificationRepository.findById(email.trim().toLowerCase()).orElse(null);
         if (ev == null || !ev.getCode().equals(code)) {
-            recordFailedAttempt(tokenId);
             throw new IllegalArgumentException("验证码错误");
         }
 
         if (ev.getCreatedAt().plusMinutes(CODE_VALID_MINUTES).isBefore(LocalDateTime.now())) {
             verificationRepository.delete(ev);
-            recordFailedAttempt(tokenId);
             throw new IllegalArgumentException("验证码已过期，请重新发送");
         }
 
@@ -97,14 +93,8 @@ public class EmailVerificationService {
         LocalDateTime since = LocalDateTime.now().minusMinutes(RATE_LIMIT_MINUTES);
         int count = attemptLogRepository.countRecentAttempts(tokenId, since);
         if (count >= MAX_ATTEMPTS) {
-            throw new IllegalArgumentException("验证次数过多，请30分钟后再尝试发送验证码");
+            throw new IllegalArgumentException("验证次数过多，30分钟内只能验证五次，请稍后再试");
         }
     }
 
-    private void recordFailedAttempt(Long tokenId) {
-        EmailAttemptLog logEntry = new EmailAttemptLog();
-        logEntry.setTokenId(tokenId);
-        logEntry.setCreatedAt(LocalDateTime.now());
-        attemptLogRepository.save(logEntry);
-    }
 }
