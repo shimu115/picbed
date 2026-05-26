@@ -8,7 +8,6 @@ const { t } = useI18n()
 const tokens = ref([])
 const loading = ref(false)
 const newTokenName = ref('')
-const newTokenEmail = ref('')
 const generatedToken = ref('')
 const showEmailDialog = ref(false)
 const editingToken = ref(null)
@@ -34,10 +33,9 @@ async function loadTokens() {
 async function handleCreate() {
   if (!newTokenName.value.trim()) return
   try {
-    const res = await createToken(newTokenName.value.trim(), newTokenEmail.value.trim())
+    const res = await createToken(newTokenName.value.trim(), '')
     generatedToken.value = res.data.data.token
     newTokenName.value = ''
-    newTokenEmail.value = ''
     await loadTokens()
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || t('token.createFailed'))
@@ -209,12 +207,6 @@ onUnmounted(() => {
         class="name-input"
         @keyup.enter="handleCreate"
       />
-      <el-input
-        v-model="newTokenEmail"
-        :placeholder="t('token.emailPlaceholder')"
-        class="email-input"
-        @keyup.enter="handleCreate"
-      />
       <el-button type="primary" @click="handleCreate" :disabled="!newTokenName.trim()">
         {{ t('token.generate') }}
       </el-button>
@@ -365,10 +357,6 @@ onUnmounted(() => {
 }
 .name-input {
   max-width: 240px;
-  flex: 1;
-}
-.email-input {
-  max-width: 260px;
   flex: 1;
 }
 .generated-token-box {
