@@ -85,6 +85,10 @@ async function save() {
         </el-popover>
       </h4>
       <div class="setting-row">
+        <span class="setting-label">{{ t('manage.tokenAutoRefreshEnable') }}</span>
+        <el-switch v-model="autoRefreshEnabled" />
+      </div>
+      <div class="setting-row">
         <span class="setting-label">{{ t('manage.tokenRefreshCron') }}</span>
         <el-input v-model="refreshCron" size="small" style="width: 200px" placeholder="0 0 0 */3 * ?" />
       </div>
@@ -102,10 +106,7 @@ async function save() {
           </el-button>
         </div>
       </div>
-      <div class="setting-row">
-        <span class="setting-label">{{ t('manage.tokenAutoRefreshEnable') }}</span>
-        <el-switch v-model="autoRefreshEnabled" />
-      </div>
+
     </div>
 
     <div class="setting-row">
