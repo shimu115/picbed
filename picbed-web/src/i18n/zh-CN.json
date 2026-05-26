@@ -81,6 +81,7 @@
     "dimensions": "分辨率",
     "url": "URL",
     "copyUrl": "复制链接",
+    "download": "下载",
     "delete": "删除",
     "deleteConfirm": "确定要删除 \"{name}\" 吗？",
     "deleteSuccess": "已删除"

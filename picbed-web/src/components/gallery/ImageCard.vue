@@ -7,7 +7,7 @@ const props = defineProps({
   image: { type: Object, required: true }
 })
 
-defineEmits(['preview', 'delete'])
+defineEmits(['preview'])
 const { t } = useI18n()
 
 const imgLoaded = ref(false)
@@ -33,6 +33,23 @@ function copyUrl() {
     document.body.removeChild(ta)
   }
   ElMessage.success(t('common.copySuccess'))
+}
+
+async function downloadImage() {
+  try {
+    const res = await fetch(props.image.ossUrl)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = props.image.filename || 'image'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } catch {
+    ElMessage.error(t('error.serverError'))
+  }
 }
 
 function formatDate(dateStr) {
@@ -66,7 +83,7 @@ function locale() {
     </div>
     <div class="card-actions">
       <el-button size="small" text @click="copyUrl">{{ t('gallery.copyUrl') }}</el-button>
-      <el-button size="small" text type="danger" @click="$emit('delete', image)">{{ t('gallery.delete') }}</el-button>
+      <el-button size="small" text type="primary" @click="downloadImage">{{ t('gallery.download') }}</el-button>
     </div>
     <div class="card-date">{{ formatDate(image.createdAt) }}</div>
   </div>

@@ -2,9 +2,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { getPublicImages, deleteImage } from '@/api'
+import { getPublicImages } from '@/api'
 import { useTokenStore } from '@/stores/token'
-import { ElMessage, ElMessageBox } from 'element-plus'
 import ImageGrid from '@/components/gallery/ImageGrid.vue'
 import ImagePreview from '@/components/gallery/ImagePreview.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -44,30 +43,6 @@ function closePreview() {
   showPreview.value = false
 }
 
-async function handleDelete(img) {
-  if (!tokenStore.hasToken) {
-    ElMessage.warning(t('token.missingToken'))
-    return
-  }
-  let confirmed = false
-  try {
-    await ElMessageBox.confirm(t('gallery.deleteConfirm', { name: img.filename }), t('common.confirm'), { type: 'warning' })
-    confirmed = true
-  } catch {
-    return
-  }
-  try {
-    await deleteImage(img.id)
-    ElMessage.success(t('gallery.deleteSuccess'))
-    await loadImages()
-  } catch (e) {
-    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
-    if (e.response?.status === 401) {
-      tokenStore.clearToken()
-    }
-  }
-}
-
 function handleLoadMore() {
   page.value++
   loadImages()
@@ -84,7 +59,6 @@ onMounted(loadImages)
       :images="images"
       :loading="loading"
       @preview="openPreview"
-      @delete="handleDelete"
     />
     <EmptyState
       v-else-if="!loading"

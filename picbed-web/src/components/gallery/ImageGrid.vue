@@ -6,7 +6,7 @@ defineProps({
   loading: { type: Boolean, default: false }
 })
 
-defineEmits(['preview', 'delete'])
+defineEmits(['preview'])
 </script>
 
 <template>
@@ -19,7 +19,6 @@ defineEmits(['preview', 'delete'])
       :key="img.id"
       :image="img"
       @preview="$emit('preview', $event)"
-      @delete="$emit('delete', $event)"
     />
   </div>
 </template>
