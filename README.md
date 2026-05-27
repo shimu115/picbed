@@ -234,7 +234,66 @@ picbed/
 - **防盗链：** 配置 Referer 白名单，仅允许你自己的域名
 - **RAM 权限：** 最小权限原则——仅授予目标 Bucket 的 `PutObject`、`DeleteObject`、`GetObject`
 
-## 部署
+## Docker 部署
+
+### 1. 配置环境变量
+
+在项目根目录创建 `.env` 文件：
+
+```bash
+# 必填：阿里云 OSS 凭证
+ALIYUN_OSS_ACCESS_KEY_ID=你的AccessKey ID
+ALIYUN_OSS_ACCESS_KEY_SECRET=你的AccessKey Secret
+ALIYUN_OSS_BUCKET_NAME=你的Bucket名称
+
+# 可选：OSS 地域节点（默认值见下方）
+ALIYUN_OSS_ENDPOINT=oss-cn-beijing.aliyuncs.com
+
+# 可选：CDN 加速域名
+ALIYUN_OSS_CUSTOM_DOMAIN=cdn.example.com
+
+# 可选：邮件通知（不填则不启用邮箱验证功能）
+SMTP_HOST=smtp.example.com
+SMTP_PORT=465
+SMTP_USERNAME=your-email@example.com
+SMTP_PASSWORD=your-smtp-password
+```
+
+| 变量 | 必填 | 默认值 | 说明 |
+|------|:---:|--------|------|
+| `ALIYUN_OSS_ACCESS_KEY_ID` | 是 | — | RAM AccessKey ID |
+| `ALIYUN_OSS_ACCESS_KEY_SECRET` | 是 | — | RAM AccessKey Secret |
+| `ALIYUN_OSS_BUCKET_NAME` | 是 | — | OSS 存储桶名称 |
+| `ALIYUN_OSS_ENDPOINT` | 否 | `oss-cn-beijing.aliyuncs.com` | OSS 地域节点 |
+| `ALIYUN_OSS_CUSTOM_DOMAIN` | 否 | — | CDN 加速域名 |
+| `SMTP_HOST` | 否 | — | SMTP 服务器地址 |
+| `SMTP_PORT` | 否 | `465` | SMTP 端口 |
+| `SMTP_USERNAME` | 否 | — | SMTP 用户名 |
+| `SMTP_PASSWORD` | 否 | — | SMTP 密码 |
+
+> `.env` 已加入 `.gitignore`，不会被提交到仓库。
+
+### 2. 构建并启动
+
+```bash
+# Windows
+build.bat
+
+# Linux / macOS
+chmod +x build.sh start.sh
+./build.sh
+```
+
+构建脚本会自动用临时容器编译后端 JAR 和前端 dist，然后构建运行时镜像并启动。仅需 Docker，无需本地安装 Java/Maven/Node.js。
+
+### 3. 手动启动 / 停止
+
+```bash
+docker-compose up -d      # 启动
+docker-compose down       # 停止
+```
+
+## 手动部署
 
 ### 后端
 
@@ -275,8 +334,14 @@ server {
 
 MIT © 2026 [shimu115](https://github.com/shimu115)
 
+## 开发说明
+
+本项目整体由 AI 辅助生成，开发工具为 [Claude Code](https://claude.ai/code)（Anthropic），底层模型为 DeepSeek V4 Pro。项目架构设计、后端接口、前端页面及绝大部分业务逻辑均由 AI 根据需求描述自动编写，少部分细节（如布局调整、交互优化、Bug 修复等）由人工手动修改完善。
+
 ## 致谢
 
+- [Claude Code](https://claude.ai/code) — AI 编程助手
+- [DeepSeek](https://deepseek.com/) — 底层大语言模型
 - [Element Plus](https://element-plus.org/) — Vue 3 组件库
 - [Bucket4j](https://bucket4j.com/) — 令牌桶限流库
 - [阿里云 OSS](https://www.aliyun.com/product/oss) — 对象存储服务

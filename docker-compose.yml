@@ -1,0 +1,20 @@
+services:
+  server:
+    build: ./picbed-server
+    container_name: picbed-server
+    restart: unless-stopped
+    ports:
+      - "8080:8880"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+
+  web:
+    build: ./picbed-web
+    container_name: picbed-web
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
