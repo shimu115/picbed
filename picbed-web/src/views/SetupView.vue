@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { setupToken, getEmailDomains } from '@/api'
@@ -18,6 +18,8 @@ const generatedToken = ref('')
 const loading = ref(false)
 const error = ref('')
 const isOther = ref(false)
+const countdown = ref(10)
+let timer = null
 
 onMounted(async () => {
   try {
@@ -26,6 +28,10 @@ onMounted(async () => {
   } catch {
     domainOptions.value = ['qq.com', 'outlook.com', '163.com']
   }
+})
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
 })
 
 function onDomainChange(val) {
@@ -52,7 +58,16 @@ async function handleSetup() {
   try {
     const res = await setupToken(masterKey.value, tokenName.value || 'Admin', email)
     generatedToken.value = res.data.data.token
-    ElMessage.success(t('setup.success'))
+    navigator.clipboard.writeText(generatedToken.value)
+    ElMessage.success(t('setup.autoCopied'))
+    countdown.value = 10
+    timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        clearInterval(timer)
+        router.push('/')
+      }
+    }, 1000)
   } catch (e) {
     error.value = e.response?.data?.msg || t('setup.setupFailed')
   } finally {
@@ -64,10 +79,9 @@ const canSubmit = computed(() => {
   return masterKey.value && fullEmail()
 })
 
-function copyAndGo() {
-  navigator.clipboard.writeText(generatedToken.value)
-  ElMessage.success(t('common.copySuccess'))
-  setTimeout(() => router.push('/upload'), 500)
+function goToGallery() {
+  if (timer) clearInterval(timer)
+  router.push('/')
 }
 </script>
 
@@ -135,8 +149,9 @@ function copyAndGo() {
       :sub-title="t('setup.successDesc')"
     >
       <template #extra>
-        <el-input :model-value="generatedToken" readonly size="large" style="margin-bottom: 16px" />
-        <el-button type="primary" @click="copyAndGo">{{ t('token.copyAndGo') }}</el-button>
+        <el-input :model-value="generatedToken" readonly size="large" style="margin-bottom: 12px" />
+        <p class="countdown-hint">{{ t('setup.redirectCountdown', { n: countdown }) }}</p>
+        <el-button type="primary" @click="goToGallery">{{ t('setup.goToGallery') }}</el-button>
       </template>
     </el-result>
   </div>
@@ -196,5 +211,10 @@ function copyAndGo() {
   color: #909399;
   margin-top: 4px;
   line-height: 1.5;
+}
+.countdown-hint {
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 12px;
 }
 </style>
