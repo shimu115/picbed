@@ -17,8 +17,12 @@ public class OssConfig {
 
     @Bean
     public OSS ossClient() {
+        String endpoint = ossProperties.getEndpoint();
+        if (!endpoint.startsWith("http")) {
+            endpoint = "https://" + endpoint;
+        }
         return new OSSClientBuilder().build(
-                ossProperties.getEndpoint(),
+                endpoint,
                 ossProperties.getAccessKeyId(),
                 ossProperties.getAccessKeySecret());
     }

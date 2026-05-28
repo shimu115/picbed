@@ -65,7 +65,8 @@ public final class OssUtil {
             String domain = customDomain.replaceFirst("^https?://", "").replaceAll("/+$", "");
             return "https://" + domain + "/" + ossKey;
         }
-        return "https://" + bucketName + "." + endpoint + "/" + ossKey;
+        String ep = endpoint.replaceFirst("^https?://", "");
+        return "https://" + bucketName + "." + ep + "/" + ossKey;
     }
 
     public static String sanitizeFilename(String filename) {
