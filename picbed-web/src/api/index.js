@@ -111,11 +111,11 @@ export function verifyToken() {
 
 // Admin - tokens
 export function listTokens() {
-  return api.get('/api/admin/tokens')
+  return api.get('/api/admin/tokens/listTokens')
 }
 
 export function createToken(name, email) {
-  return api.post('/api/admin/tokens', { name, email })
+  return api.post('/api/admin/tokens/createTokens', { name, email })
 }
 
 export function updateTokenEmail(id, email) {

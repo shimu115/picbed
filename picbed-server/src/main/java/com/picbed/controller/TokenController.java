@@ -154,7 +154,7 @@ public class TokenController {
         return ResponseEntity.ok(Result.success(result));
     }
 
-    @GetMapping("/api/admin/tokens")
+    @GetMapping("/api/admin/tokens/listTokens")
     public ResponseEntity<Result<List<Map<String, Object>>>> listTokens(
             @RequestHeader("X-Auth-Token") String authToken) {
         Token requester = tokenService.findByRawToken(authToken).orElse(null);
@@ -166,7 +166,7 @@ public class TokenController {
         return ResponseEntity.ok(Result.success(tokenService.listTokens()));
     }
 
-    @PostMapping("/api/admin/tokens")
+    @PostMapping("/api/admin/tokens/createTokens")
     public ResponseEntity<Result<Map<String, Object>>> createToken(
             @RequestHeader("X-Auth-Token") String authToken,
             @Valid @RequestBody TokenCreateRequest request) {
