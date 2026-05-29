@@ -167,9 +167,18 @@
     "emailDomainCustomPlaceholder": "Enter domain, e.g. example.com",
     "emailDomainOtherWarn": "Other email providers may not receive emails. Use with caution. If not received, please check your spam folder."
   },
+  "login": {
+    "title": "Login",
+    "prompt": "Enter your auth token to login",
+    "tokenPlaceholder": "Paste your auth token",
+    "loginBtn": "Login",
+    "loginFailed": "Login failed. Please check your token.",
+    "sessionExpired": "Session expired, please login again",
+    "goToSetup": "Go to Initial Setup"
+  },
   "error": {
-    "invalidToken": "Invalid or expired token",
-    "missingToken": "Missing X-Auth-Token header",
+    "invalidToken": "Invalid or expired session",
+    "missingToken": "Missing session cookie",
     "notFound": "Resource not found",
     "badRequest": "Invalid request",
     "serverError": "Internal server error",

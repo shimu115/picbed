@@ -1,33 +1,35 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
-import i18n from '@/i18n'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '',
-  timeout: 30000
-})
-
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('auth_token')
-  if (token) {
-    config.headers['X-Auth-Token'] = token
-  }
-  return config
+  timeout: 30000,
+  withCredentials: true
 })
 
 api.interceptors.response.use(
   response => response,
   error => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token')
-      ElMessage.error(i18n.global.t('error.invalidToken'))
-      window.dispatchEvent(new CustomEvent('auth-token-expired'))
+      window.dispatchEvent(new CustomEvent('session-expired'))
     }
     return Promise.reject(error)
   }
 )
 
 export default api
+
+// Auth
+export function login(token) {
+  return api.post('/api/auth/login', { token })
+}
+
+export function logout() {
+  return api.post('/api/auth/logout')
+}
+
+export function getSession() {
+  return api.get('/api/auth/session')
+}
 
 // Status
 export function getStatus() {
@@ -102,11 +104,6 @@ export function getSettings() {
 
 export function updateSettings(data) {
   return api.put('/api/admin/settings', data)
-}
-
-// Verify
-export function verifyToken() {
-  return api.get('/api/verify')
 }
 
 // Admin - tokens

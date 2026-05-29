@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { getStatus } from '@/api'
+import { getStatus, getSession } from '@/api'
 
 const routes = [
   {
@@ -27,6 +27,12 @@ const routes = [
     meta: { title: 'Setup', requiresToken: false }
   },
   {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { title: 'Login', requiresToken: false }
+  },
+  {
     path: '/image/:id',
     name: 'ImageView',
     component: () => import('@/views/ImageView.vue'),
@@ -48,25 +54,7 @@ const router = createRouter({
 let statusChecked = false
 
 router.beforeEach(async (to, from, next) => {
-  const token = localStorage.getItem('auth_token')
-
-  if (to.meta.requiresToken && !token) {
-    next('/')
-    return
-  }
-
-  if (to.path === '/setup') {
-    try {
-      const res = await getStatus()
-      if (res.data?.data?.initialized) {
-        next('/')
-        return
-      }
-    } catch {
-      // backend unreachable, proceed anyway
-    }
-  }
-
+  // Check system initialization status once
   if (!statusChecked) {
     statusChecked = true
     try {
@@ -78,6 +66,33 @@ router.beforeEach(async (to, from, next) => {
       }
     } catch {
       // backend unreachable, proceed anyway
+    }
+  }
+
+  // For setup page, redirect to login if already initialized
+  if (to.path === '/setup') {
+    try {
+      const res = await getStatus()
+      if (res.data?.data?.initialized) {
+        next('/login')
+        return
+      }
+    } catch {
+      // proceed anyway
+    }
+  }
+
+  // Validate session for protected routes
+  if (to.meta.requiresToken) {
+    try {
+      const res = await getSession()
+      if (res.data?.data?.valid !== true) {
+        next({ path: '/login', query: { redirect: to.fullPath } })
+        return
+      }
+    } catch {
+      next({ path: '/login', query: { redirect: to.fullPath } })
+      return
     }
   }
 

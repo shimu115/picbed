@@ -73,3 +73,5 @@ aliyun:
 app:
   upload:
     max-file-size: 20971520
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}

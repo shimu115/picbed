@@ -87,7 +87,7 @@ onMounted(loadImages)
     />
     <EmptyState
       v-else-if="!loading"
-      :show-upload="tokenStore.hasToken"
+      :show-upload="tokenStore.isValid"
       @upload="router.push('/upload')"
     />
     <div v-if="images.length < total" class="load-more">

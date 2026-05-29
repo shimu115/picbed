@@ -43,7 +43,7 @@ function toggleLang() {
           size="small"
           :class="{ 'nav-active': $route.path === item.path }"
           @click="goTo(item.path)"
-          :disabled="item.requiresToken && !tokenStore.hasToken && $route.path !== item.path"
+          :disabled="item.requiresToken && !tokenStore.isValid"
         >
           {{ t(item.label) }}
         </el-button>
@@ -83,7 +83,7 @@ function toggleLang() {
           :class="{ 'nav-active': $route.path === item.path }"
           class="drawer-nav-btn"
           @click="goTo(item.path)"
-          :disabled="item.requiresToken && !tokenStore.hasToken && $route.path !== item.path"
+          :disabled="item.requiresToken && !tokenStore.isValid"
         >
           {{ t(item.label) }}
         </el-button>

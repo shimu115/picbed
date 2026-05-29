@@ -65,7 +65,7 @@ async function handleSetup() {
       countdown.value--
       if (countdown.value <= 0) {
         clearInterval(timer)
-        router.push('/')
+        router.push('/login')
       }
     }, 1000)
   } catch (e) {
@@ -81,7 +81,7 @@ const canSubmit = computed(() => {
 
 function goToGallery() {
   if (timer) clearInterval(timer)
-  router.push('/')
+  router.push('/login')
 }
 </script>
 

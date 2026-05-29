@@ -13,7 +13,7 @@ const { uploadFiles } = useOssUpload()
 const publishToGallery = ref(false)
 
 async function handleUpload(files) {
-  if (!tokenStore.hasToken) {
+  if (!tokenStore.isValid) {
     ElMessage.warning(t('upload.noTokenHint'))
     return
   }

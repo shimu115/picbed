@@ -34,11 +34,11 @@ function onFileSelect(e) {
 
 <template>
   <div
-    :class="['upload-zone', { dragging, disabled: !tokenStore.hasToken }]"
+    :class="['upload-zone', { dragging, disabled: !tokenStore.isValid }]"
     @dragover="onDragOver"
     @dragleave="onDragLeave"
     @drop="onDrop"
-    @click="tokenStore.hasToken && $refs.fileInput.click()"
+    @click="tokenStore.isValid && $refs.fileInput.click()"
   >
     <input
       ref="fileInput"
@@ -49,7 +49,7 @@ function onFileSelect(e) {
       @change="onFileSelect"
     />
     <el-icon class="upload-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="#c0c4cc"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg></el-icon>
-    <p v-if="tokenStore.hasToken" class="upload-hint">{{ t('upload.dragHint') }}</p>
+    <p v-if="tokenStore.isValid" class="upload-hint">{{ t('upload.dragHint') }}</p>
     <p v-else class="upload-hint disabled-hint">{{ t('upload.noTokenHint') }}</p>
     <p class="upload-types">{{ t('upload.typeHint') }}</p>
   </div>

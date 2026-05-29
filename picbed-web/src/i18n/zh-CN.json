@@ -167,9 +167,18 @@
     "emailDomainCustomPlaceholder": "请输入邮箱域名，如 example.com",
     "emailDomainOtherWarn": "其他邮箱可能无法收到邮件，请谨慎使用。若未收到邮件，请检查垃圾邮件箱。"
   },
+  "login": {
+    "title": "登录",
+    "prompt": "请输入您的认证 Token 登录",
+    "tokenPlaceholder": "请粘贴您的认证 Token",
+    "loginBtn": "登录",
+    "loginFailed": "登录失败，请检查您的 Token",
+    "sessionExpired": "会话已过期，请重新登录",
+    "goToSetup": "前往初始化设置"
+  },
   "error": {
-    "invalidToken": "Token 无效或已过期",
-    "missingToken": "缺少 X-Auth-Token 请求头",
+    "invalidToken": "会话无效或已过期",
+    "missingToken": "缺少会话 Cookie",
     "notFound": "资源未找到",
     "badRequest": "请求参数错误",
     "serverError": "服务器内部错误",

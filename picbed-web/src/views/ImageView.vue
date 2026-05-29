@@ -3,12 +3,14 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { getPublicImage, getAdminImage } from '@/api'
+import { useTokenStore } from '@/stores/token'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
+const tokenStore = useTokenStore()
 
 const image = ref(null)
 const loading = ref(true)
@@ -51,15 +53,12 @@ function goBack() {
 
 onMounted(async () => {
   const id = route.params.id
-  const token = localStorage.getItem('auth_token')
   try {
-    if (token) {
+    if (tokenStore.isValid) {
       const res = await getAdminImage(id)
-      console.log("admin")
       image.value = res.data.data
     } else {
       const res = await getPublicImage(id)
-      console.log("public")
       image.value = res.data.data
     }
   } catch (e) {

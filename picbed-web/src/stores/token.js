@@ -1,41 +1,62 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { verifyToken } from '@/api'
+import { login, logout, getSession } from '@/api'
 
 export const useTokenStore = defineStore('token', () => {
+  const router = useRouter()
   const token = ref(localStorage.getItem('auth_token') || '')
   const role = ref('')
   const tokenId = ref(null)
   const email = ref('')
   const isValid = ref(false)
   const pendingEmailChange = ref(false)
-  const router = useRouter()
 
   const hasToken = computed(() => token.value.length > 0)
   const isAdmin = computed(() => role.value === 'ADMIN')
   const emailMissing = computed(() => hasToken.value && isValid.value && !email.value)
 
-  async function validateToken() {
-    if (!hasToken.value) {
-      isValid.value = false
-      role.value = ''
-      return false
-    }
+  async function fetchSessionInfo() {
     try {
-      const res = await verifyToken()
-      isValid.value = res.data?.data?.valid === true
-      role.value = res.data?.data?.role || ''
-      tokenId.value = res.data?.data?.id || null
-      email.value = res.data?.data?.email || ''
-      return isValid.value
+      const res = await getSession()
+      const data = res.data?.data
+      if (data?.valid) {
+        isValid.value = true
+        role.value = data.role || ''
+        tokenId.value = data.id || null
+        email.value = data.email || ''
+        return true
+      }
+    } catch {
+      // no valid session
+    }
+    isValid.value = false
+    role.value = ''
+    tokenId.value = null
+    email.value = ''
+    return false
+  }
+
+  async function loginWithToken() {
+    if (!hasToken.value) return false
+    try {
+      const res = await login(token.value)
+      const data = res.data?.data
+      isValid.value = true
+      role.value = data.role || ''
+      tokenId.value = data.id || null
+      email.value = data.email || ''
+      return true
     } catch {
       isValid.value = false
       role.value = ''
-      email.value = ''
-      clearToken()
       return false
     }
+  }
+
+  function setToken(rawToken) {
+    token.value = rawToken
+    localStorage.setItem('auth_token', rawToken)
   }
 
   function setEmail(val) {
@@ -46,10 +67,13 @@ export const useTokenStore = defineStore('token', () => {
     pendingEmailChange.value = val
   }
 
-  async function setToken(rawToken) {
-    token.value = rawToken
-    localStorage.setItem('auth_token', rawToken)
-    return await validateToken()
+  async function doLogout() {
+    try {
+      await logout()
+    } catch {
+      // ignore
+    }
+    clearToken()
   }
 
   function clearToken() {
@@ -57,19 +81,22 @@ export const useTokenStore = defineStore('token', () => {
     isValid.value = false
     role.value = ''
     tokenId.value = null
+    email.value = ''
     localStorage.removeItem('auth_token')
-    if (router.currentRoute?.value?.meta?.requiresToken) {
-      router.push('/')
-    }
   }
 
-  if (hasToken.value) {
-    validateToken()
-  }
+  // Check for existing session on init
+  fetchSessionInfo()
 
-  window.addEventListener('auth-token-expired', () => {
+  window.addEventListener('session-expired', () => {
     clearToken()
+    router.push('/login')
   })
 
-  return { token, role, tokenId, email, isValid, pendingEmailChange, hasToken, isAdmin, emailMissing, setToken, clearToken, validateToken, setEmail, setPendingEmailChange }
+  return {
+    token, role, tokenId, email, isValid, pendingEmailChange,
+    hasToken, isAdmin, emailMissing,
+    setToken, clearToken, fetchSessionInfo, loginWithToken, doLogout,
+    setEmail, setPendingEmailChange
+  }
 })

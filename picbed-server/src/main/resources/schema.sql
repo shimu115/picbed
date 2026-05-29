@@ -63,3 +63,13 @@ CREATE TABLE IF NOT EXISTS email_domains (
 MERGE INTO email_domains (id, domain) KEY(id) VALUES (1, 'qq.com');
 MERGE INTO email_domains (id, domain) KEY(id) VALUES (2, 'outlook.com');
 MERGE INTO email_domains (id, domain) KEY(id) VALUES (3, '163.com');
+
+CREATE TABLE IF NOT EXISTS sessions (
+    session_id VARCHAR(64) PRIMARY KEY,
+    token_id BIGINT NOT NULL,
+    role VARCHAR(10) NOT NULL DEFAULT 'USER',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    FOREIGN KEY (token_id) REFERENCES tokens(id)
+);

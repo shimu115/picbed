@@ -21,8 +21,15 @@ public class TokenService {
     @Autowired
     private TokenRepository tokenRepository;
 
+    @Autowired
+    private SessionService sessionService;
+
     @Transactional
     public Map<String, Object> createToken(String name, String role, String email) {
+        if (tokenRepository.existsByName(name)) {
+            throw new IllegalArgumentException("Username '" + name + "' already exists");
+        }
+
         String rawToken = TokenUtil.generateRawToken();
         String tokenHash = TokenUtil.hashToken(rawToken);
 
@@ -56,11 +63,7 @@ public class TokenService {
             return false;
         }
         String hash = TokenUtil.hashToken(rawToken);
-        Optional<Token> opt = tokenRepository.findByTokenHashAndIsActiveTrue(hash);
-        if (opt.isEmpty()) {
-            return false;
-        }
-        return !TokenUtil.isExpired(opt.get().getExpiresAt());
+        return tokenRepository.findByTokenHashAndIsActiveTrue(hash).isPresent();
     }
 
     public Optional<Token> findByRawToken(String rawToken) {
@@ -113,18 +116,18 @@ public class TokenService {
     }
 
     @Transactional
-    public boolean revokeToken(Long id, String requesterRawToken) {
-        Token target = tokenRepository.findById(id).orElse(null);
+    public boolean revokeToken(Long targetId, Long requesterTokenId) {
+        Token target = tokenRepository.findById(targetId).orElse(null);
         if (target == null) {
-            log.warn("Revoke failed: target token id={} not found", id);
+            log.warn("Revoke failed: target token id={} not found", targetId);
             return false;
         }
         if (!target.getIsActive()) {
-            log.warn("Revoke failed: target token '{}' (id={}) already revoked", target.getName(), id);
+            log.warn("Revoke failed: target token '{}' (id={}) already revoked", target.getName(), targetId);
             return false;
         }
 
-        Token requester = findByRawToken(requesterRawToken).orElse(null);
+        Token requester = tokenRepository.findById(requesterTokenId).orElse(null);
         if (requester == null || !requester.getIsActive()) {
             return false;
         }
@@ -141,12 +144,15 @@ public class TokenService {
         }
 
         if ("ADMIN".equalsIgnoreCase(target.getRole())) {
-            log.warn("Revoke rejected: attempt to revoke admin token '{}' (id={})", target.getName(), id);
+            log.warn("Revoke rejected: attempt to revoke admin token '{}' (id={})", target.getName(), targetId);
             throw new IllegalArgumentException("Cannot revoke an admin token");
         }
 
         target.setIsActive(false);
         tokenRepository.save(target);
+
+        sessionService.revokeSessionsByTokenId(targetId);
+
         log.info("Revoked {} token '{}' (id={})", target.getRole(), target.getName(), target.getId());
         return true;
     }

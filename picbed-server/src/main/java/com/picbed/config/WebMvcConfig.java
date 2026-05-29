@@ -1,6 +1,6 @@
 package com.picbed.config;
 
-import com.picbed.interceptor.TokenInterceptor;
+import com.picbed.interceptor.SessionInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -10,12 +10,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired
-    private TokenInterceptor tokenInterceptor;
+    private SessionInterceptor sessionInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(tokenInterceptor)
-                .addPathPatterns("/api/admin/**", "/api/upload/**", "/api/verify", "/api/account/**")
-                .excludePathPatterns("/api/public/**", "/api/setup/**");
+        registry.addInterceptor(sessionInterceptor)
+                .addPathPatterns("/api/admin/**", "/api/upload/**", "/api/auth/session", "/api/account/**")
+                .excludePathPatterns("/api/public/**", "/api/setup/**", "/api/auth/login", "/api/auth/logout");
     }
 }
