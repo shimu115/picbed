@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { listTokens, createToken, revokeToken, toggleTokenActive, updateTokenEmail, warnToken, adminSendVerificationCode, adminVerifyEmailCode } from '@/api'
+import { listTokens, createToken, revokeToken, toggleTokenActive, updateTokenEmail, warnToken, adminSendVerificationCode, adminVerifyEmailCode, adminRefreshToken } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { t } = useI18n()
@@ -136,6 +136,17 @@ async function saveEmailDialog() {
   }
 }
 
+async function handleRefresh(token) {
+  try {
+    const res = await adminRefreshToken(token.id)
+    generatedToken.value = res.data.data.token
+    ElMessage.success(t('token.refreshSuccess'))
+    await loadTokens()
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
+  }
+}
+
 async function handleWarn(token) {
   try {
     await ElMessageBox.confirm(
@@ -227,6 +238,7 @@ onUnmounted(() => {
         <template #default="{ row }">
           <el-switch
             :model-value="row.isActive"
+            :disabled="row.role === 'ADMIN'"
             size="small"
             @change="handleToggleActive(row)"
           />
@@ -237,26 +249,42 @@ onUnmounted(() => {
       </el-table-column>
       <el-table-column :label="t('token.actions')" width="230">
         <template #default="{ row }">
-          <template v-if="row.isActive">
-            <el-button
-              v-if="row.role !== 'ADMIN' && row.email"
+          <el-button
+            v-if="row.role === 'ADMIN' && (row.email !== null)"
+            size="small"
+            type="primary"
+            text
+            @click="handleRefresh(row)"
+          >
+            {{ t('token.refresh') }}
+          </el-button>
+          <el-button
+              v-if="row.role !== 'ADMIN' && (row.email !== null)"
+              size="small"
+              type="primary"
+              text
+              @click="handleRefresh(row)"
+          >
+            {{ t('token.refresh') }}
+          </el-button>
+          <el-button
+              v-if="row.role !== 'ADMIN' && (row.email !== null)"
               size="small"
               type="warning"
               text
               @click="handleWarn(row)"
-            >
-              {{ t('token.warnUser') }}
-            </el-button>
-            <el-button
-              v-if="row.role !== 'ADMIN'"
-              size="small"
-              type="danger"
-              text
-              @click="handleRevoke(row)"
-            >
-              {{ t('token.revoke') }}
-            </el-button>
-          </template>
+          >
+            {{ t('token.warnUser') }}
+          </el-button>
+          <el-button
+            v-if="row.role !== 'ADMIN'"
+            size="small"
+            type="danger"
+            text
+            @click="handleRevoke(row)"
+          >
+            {{ t('token.revoke') }}
+          </el-button>
         </template>
       </el-table-column>
     </el-table>

@@ -113,11 +113,17 @@ public class TokenService {
     }
 
     @Transactional
-    public void toggleTokenActive(Long id, boolean active) {
+    public void toggleTokenActive(Long id, boolean active, Long requesterTokenId) {
         Token token = tokenRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Token not found: " + id));
         if (token.getRevoked()) {
             throw new IllegalArgumentException("Cannot toggle a revoked token");
+        }
+        if ("ADMIN".equalsIgnoreCase(token.getRole())) {
+            throw new IllegalArgumentException("Cannot toggle an admin token");
+        }
+        if (token.getId().equals(requesterTokenId)) {
+            throw new IllegalArgumentException("Cannot toggle your own token");
         }
         token.setIsActive(active);
         tokenRepository.save(token);
@@ -179,6 +185,42 @@ public class TokenService {
 
         log.info("Revoked {} token '{}' (id={})", target.getRole(), target.getName(), target.getId());
         return true;
+    }
+
+    @Transactional
+    public Map<String, Object> refreshToken(Long targetId, Long requesterTokenId) {
+        Token target = tokenRepository.findById(targetId)
+                .orElseThrow(() -> new IllegalArgumentException("Token not found: " + targetId));
+        if (target.getRevoked()) {
+            throw new IllegalArgumentException("Cannot refresh a revoked token");
+        }
+        if (target.getEmail() == null || target.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Token has no email set");
+        }
+
+        Token requester = tokenRepository.findById(requesterTokenId).orElse(null);
+        if (requester == null || !requester.getIsActive()) {
+            throw new IllegalArgumentException("Requester token invalid");
+        }
+        if (!"ADMIN".equalsIgnoreCase(requester.getRole())) {
+            throw new IllegalArgumentException("Only admin tokens can refresh other tokens");
+        }
+
+        String rawToken = TokenUtil.generateRawToken();
+        target.setTokenHash(TokenUtil.hashToken(rawToken));
+        tokenRepository.save(target);
+
+        sessionService.revokeSessionsByTokenId(targetId);
+
+        log.info("Refreshed token '{}' (id={})", target.getName(), targetId);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("id", target.getId());
+        result.put("name", target.getName());
+        result.put("role", target.getRole());
+        result.put("email", target.getEmail());
+        result.put("token", rawToken);
+        return result;
     }
 
     public boolean hasAnyToken() {

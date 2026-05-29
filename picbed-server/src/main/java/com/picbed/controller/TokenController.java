@@ -206,10 +206,28 @@ public class TokenController {
             HttpServletRequest request,
             @PathVariable Long id,
             @RequestBody Map<String, Boolean> body) {
+        Long requesterTokenId = (Long) request.getAttribute("tokenId");
         boolean active = body.getOrDefault("active", true);
         try {
-            tokenService.toggleTokenActive(id, active);
+            tokenService.toggleTokenActive(id, active, requesterTokenId);
             return ResponseEntity.ok(Result.success());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));
+        }
+    }
+
+    @PostMapping("/api/admin/tokens/{id}/refresh")
+    public ResponseEntity<Result<Map<String, Object>>> refreshToken(
+            HttpServletRequest request,
+            @PathVariable Long id) {
+        Long requesterTokenId = (Long) request.getAttribute("tokenId");
+        try {
+            Map<String, Object> result = tokenService.refreshToken(id, requesterTokenId);
+            String targetEmail = (String) result.get("email");
+            String targetName = (String) result.get("name");
+            String rawToken = (String) result.get("token");
+            emailService.sendTokenRefreshed(targetEmail, targetName, rawToken);
+            return ResponseEntity.ok(Result.success(result));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));
         }

@@ -65,7 +65,9 @@
     "enable": "Enable",
     "disable": "Disable",
     "tokenDisabled": "Token disabled, contact admin",
-    "tokenRevoked": "Token revoked, contact admin for a new one"
+    "tokenRevoked": "Token revoked, contact admin for a new one",
+    "refresh": "refresh",
+    "refreshSuccess": "Token refreshed"
   },
   "gallery": {
     "title": "Gallery",

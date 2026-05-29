@@ -150,3 +150,7 @@ export function revokeToken(id) {
 export function toggleTokenActive(id, active) {
   return api.put(`/api/admin/tokens/${id}/active`, { active })
 }
+
+export function adminRefreshToken(id) {
+  return api.post(`/api/admin/tokens/${id}/refresh`)
+}
