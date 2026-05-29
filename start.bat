@@ -3,7 +3,7 @@ chcp 65001 >nul
 setlocal
 
 echo Starting PicBed...
-docker-compose up -d
+docker compose up -d
 
 if %errorlevel% equ 0 (
     echo PicBed is running!
