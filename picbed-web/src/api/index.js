@@ -135,8 +135,8 @@ export function warnToken(id) {
   return api.post(`/api/admin/tokens/${id}/warn`)
 }
 
-export function adminSendVerificationCode(id) {
-  return api.post(`/api/admin/tokens/${id}/email/send-code`)
+export function adminSendVerificationCode(id, email) {
+  return api.post(`/api/admin/tokens/${id}/email/send-code`, email ? { email } : {})
 }
 
 export function adminVerifyEmailCode(id, code) {

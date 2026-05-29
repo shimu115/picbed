@@ -67,7 +67,9 @@
     "tokenDisabled": "Token 已禁用，请联系管理员",
     "tokenRevoked": "Token 已被吊销，请联系管理员重新生成",
     "refresh": "刷新",
-    "refreshSuccess": "Token 已刷新"
+    "refreshSuccess": "Token 已刷新",
+    "verifyAndSave": "验证并保存",
+    "emailRequired": "请先输入邮箱"
   },
   "gallery": {
     "title": "画廊",

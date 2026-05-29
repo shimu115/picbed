@@ -154,8 +154,14 @@ public class TokenController {
     @PostMapping("/api/admin/tokens/{id}/email/send-code")
     public ResponseEntity<Result<Void>> adminSendVerificationCode(
             HttpServletRequest request,
-            @PathVariable Long id) {
-        String email = tokenService.getTokenEmail(id);
+            @PathVariable Long id,
+            @RequestBody(required = false) SendCodeRequest req) {
+        String email;
+        if (req != null && req.getEmail() != null && !req.getEmail().isBlank()) {
+            email = req.getEmail().trim().toLowerCase();
+        } else {
+            email = tokenService.getTokenEmail(id);
+        }
         if (email == null || email.isBlank()) {
             return ResponseEntity.badRequest()
                     .body(Result.error("Token has no email set", 400));

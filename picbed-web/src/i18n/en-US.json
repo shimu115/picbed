@@ -67,7 +67,9 @@
     "tokenDisabled": "Token disabled, contact admin",
     "tokenRevoked": "Token revoked, contact admin for a new one",
     "refresh": "refresh",
-    "refreshSuccess": "Token refreshed"
+    "refreshSuccess": "Token refreshed",
+    "verifyAndSave": "Verify & Save",
+    "emailRequired": "Please enter email first"
   },
   "gallery": {
     "title": "Gallery",
