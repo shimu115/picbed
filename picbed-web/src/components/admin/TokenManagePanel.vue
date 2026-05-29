@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { listTokens, createToken, revokeToken, updateTokenEmail, warnToken, adminSendVerificationCode, adminVerifyEmailCode } from '@/api'
+import { listTokens, createToken, revokeToken, toggleTokenActive, updateTokenEmail, warnToken, adminSendVerificationCode, adminVerifyEmailCode } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { t } = useI18n()
@@ -56,6 +56,17 @@ async function handleRevoke(token) {
     if (e.response?.data?.msg) {
       ElMessage.error(e.response.data.msg)
     }
+  }
+}
+
+async function handleToggleActive(token) {
+  const newActive = !token.isActive
+  try {
+    await toggleTokenActive(token.id, newActive)
+    ElMessage.success(t('settings.saved'))
+    await loadTokens()
+  } catch (e) {
+    ElMessage.error(e.response?.data?.msg || t('error.serverError'))
   }
 }
 
@@ -214,9 +225,11 @@ onUnmounted(() => {
       </el-table-column>
       <el-table-column :label="t('token.active')" width="80">
         <template #default="{ row }">
-          <el-tag :type="row.isActive ? 'success' : 'danger'" size="small">
-            {{ row.isActive ? t('common.yes') : t('common.no') }}
-          </el-tag>
+          <el-switch
+            :model-value="row.isActive"
+            size="small"
+            @change="handleToggleActive(row)"
+          />
         </template>
       </el-table-column>
       <el-table-column :label="t('token.created')" width="170">

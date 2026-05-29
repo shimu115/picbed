@@ -12,16 +12,20 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
 
     Optional<Token> findByTokenHash(String tokenHash);
 
-    List<Token> findByIsActiveTrue();
+    List<Token> findByIsActiveTrueAndRevokedFalse();
 
-    long countByIsActiveTrueAndRole(String role);
+    List<Token> findByRevokedFalse();
 
-    List<Token> findByIsActiveTrueAndEmailIsNotNull();
+    List<Token> findByIsActiveTrueAndRevokedFalseAndEmailIsNotNull();
 
-    boolean existsByEmailAndIsActiveTrue(String email);
+    List<Token> findByRevokedFalseAndEmailIsNotNull();
+
+    boolean existsByEmailAndIsActiveTrueAndRevokedFalse(String email);
 
     List<Token> findByNameContainingIgnoreCase(String name);
 
     boolean existsByName(String name);
+
+    boolean existsByNameAndRevokedFalse(String name);
 }
 

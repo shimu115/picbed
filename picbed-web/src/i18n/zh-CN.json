@@ -60,7 +60,12 @@
     "verifyOldEmail": "验证旧邮箱",
     "currentEmail": "当前邮箱",
     "verify": "验证",
-    "ignore": "忽略"
+    "ignore": "忽略",
+    "disabled": "已禁用",
+    "enable": "启用",
+    "disable": "禁用",
+    "tokenDisabled": "Token 已禁用，请联系管理员",
+    "tokenRevoked": "Token 已被吊销，请联系管理员重新生成"
   },
   "gallery": {
     "title": "画廊",

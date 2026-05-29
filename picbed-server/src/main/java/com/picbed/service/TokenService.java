@@ -26,7 +26,7 @@ public class TokenService {
 
     @Transactional
     public Map<String, Object> createToken(String name, String role, String email) {
-        if (tokenRepository.existsByName(name)) {
+        if (tokenRepository.existsByNameAndRevokedFalse(name)) {
             throw new IllegalArgumentException("Username '" + name + "' already exists");
         }
 
@@ -58,12 +58,23 @@ public class TokenService {
         return result;
     }
 
-    public boolean validateToken(String rawToken) {
+    public String validateTokenStatus(String rawToken) {
         if (rawToken == null || rawToken.isBlank()) {
-            return false;
+            return "invalid";
         }
         String hash = TokenUtil.hashToken(rawToken);
-        return tokenRepository.findByTokenHashAndIsActiveTrue(hash).isPresent();
+        Optional<Token> opt = tokenRepository.findByTokenHash(hash);
+        if (opt.isEmpty()) {
+            return "invalid";
+        }
+        Token token = opt.get();
+        if (token.getRevoked()) {
+            return "revoked";
+        }
+        if (!token.getIsActive()) {
+            return "disabled";
+        }
+        return "valid";
     }
 
     public Optional<Token> findByRawToken(String rawToken) {
@@ -78,7 +89,7 @@ public class TokenService {
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new IllegalArgumentException("Token not found: " + tokenId));
         String normalized = (email != null && !email.isBlank()) ? email.trim().toLowerCase() : null;
-        if (normalized != null && tokenRepository.existsByEmailAndIsActiveTrue(normalized)
+        if (normalized != null && tokenRepository.existsByEmailAndIsActiveTrueAndRevokedFalse(normalized)
                 && !normalized.equals(token.getEmail())) {
             throw new IllegalArgumentException("邮箱已被其他用户使用，请换一个邮箱");
         }
@@ -88,7 +99,7 @@ public class TokenService {
     }
 
     public List<Token> findAllActive() {
-        return tokenRepository.findByIsActiveTrue();
+        return tokenRepository.findByIsActiveTrueAndRevokedFalse();
     }
 
     @Transactional
@@ -101,8 +112,20 @@ public class TokenService {
         }
     }
 
+    @Transactional
+    public void toggleTokenActive(Long id, boolean active) {
+        Token token = tokenRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Token not found: " + id));
+        if (token.getRevoked()) {
+            throw new IllegalArgumentException("Cannot toggle a revoked token");
+        }
+        token.setIsActive(active);
+        tokenRepository.save(token);
+        log.info("Token '{}' (id={}) isActive={}", token.getName(), id, active);
+    }
+
     public List<Map<String, Object>> listTokens() {
-        return tokenRepository.findByIsActiveTrue().stream().map(t -> {
+        return tokenRepository.findByRevokedFalse().stream().map(t -> {
             Map<String, Object> m = new HashMap<>();
             m.put("id", t.getId());
             m.put("name", t.getName());
@@ -122,7 +145,7 @@ public class TokenService {
             log.warn("Revoke failed: target token id={} not found", targetId);
             return false;
         }
-        if (!target.getIsActive()) {
+        if (target.getRevoked()) {
             log.warn("Revoke failed: target token '{}' (id={}) already revoked", target.getName(), targetId);
             return false;
         }
@@ -149,6 +172,7 @@ public class TokenService {
         }
 
         target.setIsActive(false);
+        target.setRevoked(true);
         tokenRepository.save(target);
 
         sessionService.revokeSessionsByTokenId(targetId);
@@ -169,5 +193,10 @@ public class TokenService {
     public String getTokenEmail(Long tokenId) {
         Token token = tokenRepository.findById(tokenId).orElse(null);
         return token != null ? token.getEmail() : null;
+    }
+
+    public String getTokenName(Long tokenId) {
+        Token token = tokenRepository.findById(tokenId).orElse(null);
+        return token != null ? token.getName() : null;
     }
 }

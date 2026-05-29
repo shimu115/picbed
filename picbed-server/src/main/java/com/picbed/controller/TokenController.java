@@ -201,6 +201,20 @@ public class TokenController {
         }
     }
 
+    @PutMapping("/api/admin/tokens/{id}/active")
+    public ResponseEntity<Result<Void>> toggleTokenActive(
+            HttpServletRequest request,
+            @PathVariable Long id,
+            @RequestBody Map<String, Boolean> body) {
+        boolean active = body.getOrDefault("active", true);
+        try {
+            tokenService.toggleTokenActive(id, active);
+            return ResponseEntity.ok(Result.success());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));
+        }
+    }
+
     @PostMapping("/api/admin/tokens/{id}/warn")
     public ResponseEntity<Result<Void>> warnToken(
             HttpServletRequest request,
@@ -210,9 +224,7 @@ public class TokenController {
             return ResponseEntity.badRequest()
                     .body(Result.error("Token has no email set, cannot send warning", 400));
         }
-        String targetName = tokenService.listTokens().stream()
-                .filter(m -> m.get("id").equals(id))
-                .findFirst().map(m -> (String) m.get("name")).orElse("Unknown");
+        String targetName = tokenService.getTokenName(id) != null ? tokenService.getTokenName(id) : "Unknown";
         emailService.sendTokenCompromisedWarning(email, targetName);
         return ResponseEntity.ok(Result.success());
     }

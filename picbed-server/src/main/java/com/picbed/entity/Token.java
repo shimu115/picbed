@@ -34,6 +34,9 @@ public class Token {
     @Column(length = 255)
     private String email;
 
+    @Column(nullable = false)
+    private Boolean revoked = false;
+
     @PrePersist
     public void prePersist() {
         if (createdAt == null) {

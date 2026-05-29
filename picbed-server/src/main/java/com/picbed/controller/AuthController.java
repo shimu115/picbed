@@ -38,9 +38,17 @@ public class AuthController {
                     .body(Result.error("Token is required", 400));
         }
 
-        if (!tokenService.validateToken(token)) {
-            return ResponseEntity.status(401)
-                    .body(Result.error("Invalid or expired token", 401));
+        String status = tokenService.validateTokenStatus(token);
+        switch (status) {
+            case "revoked":
+                return ResponseEntity.status(401)
+                        .body(Result.error("Token has been revoked, contact admin for a new one", 401));
+            case "disabled":
+                return ResponseEntity.status(403)
+                        .body(Result.error("Token disabled, contact admin", 403));
+            case "invalid":
+                return ResponseEntity.status(401)
+                        .body(Result.error("Invalid token", 401));
         }
 
         Token tokenEntity = tokenService.findByRawToken(token).orElse(null);
@@ -106,11 +114,7 @@ public class AuthController {
                     .body(Result.error("Session expired", 401));
         }
 
-        String name = tokenService.listTokens().stream()
-                .filter(m -> m.get("id").equals(tokenId))
-                .findFirst()
-                .map(m -> (String) m.get("name"))
-                .orElse(null);
+        String name = tokenService.getTokenName(tokenId);
 
         String email = tokenService.getTokenEmail(tokenId);
 

@@ -60,7 +60,12 @@
     "verifyOldEmail": "Verify Old Email",
     "currentEmail": "Current email",
     "verify": "Verify",
-    "ignore": "Ignore"
+    "ignore": "Ignore",
+    "disabled": "Disabled",
+    "enable": "Enable",
+    "disable": "Disable",
+    "tokenDisabled": "Token disabled, contact admin",
+    "tokenRevoked": "Token revoked, contact admin for a new one"
   },
   "gallery": {
     "title": "Gallery",

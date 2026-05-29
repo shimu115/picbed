@@ -146,3 +146,7 @@ export function adminVerifyEmailCode(id, code) {
 export function revokeToken(id) {
   return api.delete(`/api/admin/tokens/${id}`)
 }
+
+export function toggleTokenActive(id, active) {
+  return api.put(`/api/admin/tokens/${id}/active`, { active })
+}
