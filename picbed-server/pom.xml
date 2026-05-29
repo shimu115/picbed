@@ -13,7 +13,7 @@
 
     <groupId>com.picbed</groupId>
     <artifactId>picbed-server</artifactId>
-    <version>v1.0.0.493043bc-beta</version>
+    <version>v1.0.0.4ab7d368-beta</version>
     <name>picbed-server</name>
     <description>PicBed Image Hosting Service</description>
 
