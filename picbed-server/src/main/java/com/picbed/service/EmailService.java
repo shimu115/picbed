@@ -20,27 +20,6 @@ public class EmailService {
         return mailSender != null;
     }
 
-    public void sendTokenRefresh(String to, String tokenName, String newToken) {
-        if (mailSender == null) {
-            log.warn("Mail not configured, skipping email to {}", to);
-            return;
-        }
-        try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(to);
-            msg.setFrom(fromAddress);
-            msg.setSubject("PicBed Token 已刷新: " + tokenName);
-            msg.setText("您的 PicBed Token \"" + tokenName + "\" 已被刷新。\n\n"
-                    + "新 Token（请立即保存，关闭后将无法再次查看）：\n"
-                    + newToken + "\n\n"
-                    + "旧 Token 已失效。");
-            mailSender.send(msg);
-            log.info("Sent token refresh email to {} for token '{}'", to, tokenName);
-        } catch (Exception e) {
-            log.error("Failed to send token refresh email to {}: {}", to, e.getMessage());
-        }
-    }
-
     public void sendTokenCreated(String to, String tokenName, String token) {
         if (mailSender == null) {
             log.warn("Mail not configured, skipping setup email to {}", to);

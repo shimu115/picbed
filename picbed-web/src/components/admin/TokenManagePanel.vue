@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { listTokens, createToken, revokeToken, updateTokenEmail, adminRefreshToken, warnToken, adminSendVerificationCode, adminVerifyEmailCode } from '@/api'
+import { listTokens, createToken, revokeToken, updateTokenEmail, warnToken, adminSendVerificationCode, adminVerifyEmailCode } from '@/api'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { t } = useI18n()
@@ -125,29 +125,6 @@ async function saveEmailDialog() {
   }
 }
 
-const refreshingId = ref(null)
-const adminGeneratedToken = ref('')
-
-async function handleAdminRefresh(token) {
-  try {
-    await ElMessageBox.confirm(
-      t('token.adminRefreshConfirm', { name: token.name }),
-      t('common.confirm'),
-      { type: 'warning', confirmButtonText: t('token.adminRefresh'), cancelButtonText: t('common.cancel') }
-    )
-    refreshingId.value = token.id
-    const res = await adminRefreshToken(token.id)
-    adminGeneratedToken.value = res.data.data.token
-    ElMessage.success(t('token.refreshSuccess'))
-  } catch (e) {
-    if (e !== 'cancel' && e?.response?.data?.msg) {
-      ElMessage.error(e.response.data.msg)
-    }
-  } finally {
-    refreshingId.value = null
-  }
-}
-
 async function handleWarn(token) {
   try {
     await ElMessageBox.confirm(
@@ -164,10 +141,6 @@ async function handleWarn(token) {
 
 function copyGeneratedToken() {
   copyToClipboard(generatedToken.value)
-}
-
-function copyAdminGeneratedToken() {
-  copyToClipboard(adminGeneratedToken.value)
 }
 
 function copyToClipboard(text) {
@@ -221,15 +194,6 @@ onUnmounted(() => {
       </el-input>
     </div>
 
-    <div v-if="adminGeneratedToken" class="generated-token-box">
-      <p class="warning-text">{{ t('token.newTokenShown') }}</p>
-      <el-input :model-value="adminGeneratedToken" readonly>
-        <template #append>
-          <el-button @click="copyAdminGeneratedToken">{{ t('common.copy') }}</el-button>
-        </template>
-      </el-input>
-    </div>
-
     <div class="token-table-wrap">
       <el-table :data="tokens" v-loading="loading">
       <el-table-column prop="id" :label="t('token.id')" width="70" />
@@ -261,16 +225,6 @@ onUnmounted(() => {
       <el-table-column :label="t('token.actions')" width="230">
         <template #default="{ row }">
           <template v-if="row.isActive">
-            <el-button
-              v-if="row.email"
-              size="small"
-              type="primary"
-              text
-              :loading="refreshingId === row.id"
-              @click="handleAdminRefresh(row)"
-            >
-              {{ t('token.adminRefresh') }}
-            </el-button>
             <el-button
               v-if="row.role !== 'ADMIN' && row.email"
               size="small"

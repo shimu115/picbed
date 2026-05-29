@@ -6,7 +6,7 @@ import com.picbed.dto.Result;
 import com.picbed.dto.SendCodeRequest;
 import com.picbed.dto.TokenCreateRequest;
 import com.picbed.dto.TokenEmailUpdateRequest;
-import com.picbed.dto.TokenRefreshRequest;
+
 import com.picbed.dto.VerifyCodeRequest;
 import com.picbed.entity.Token;
 import com.picbed.repository.EmailDomainRepository;
@@ -252,55 +252,6 @@ public class TokenController {
                 return ResponseEntity.ok(Result.success());
             }
             return ResponseEntity.notFound().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));
-        }
-    }
-
-    @PostMapping("/api/account/refresh")
-    public ResponseEntity<Result<Map<String, Object>>> refreshOwnToken(
-            @RequestHeader("X-Auth-Token") String authToken,
-            @RequestBody TokenRefreshRequest request) {
-        Token token = tokenService.findByRawToken(authToken).orElse(null);
-        if (token == null || !token.getIsActive()) {
-            return ResponseEntity.status(401)
-                    .body(Result.error("Invalid token", 401));
-        }
-        try {
-            String newRawToken = tokenService.refreshOwnToken(token.getId(), request.isSendEmail());
-            if (request.isSendEmail()) {
-                emailService.sendTokenRefresh(token.getEmail(), token.getName(), newRawToken);
-            }
-            Map<String, Object> data = new HashMap<>();
-            data.put("token", newRawToken);
-            data.put("id", token.getId());
-            data.put("name", token.getName());
-            return ResponseEntity.ok(Result.success(data));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));
-        }
-    }
-
-    @PostMapping("/api/admin/tokens/{id}/refresh")
-    public ResponseEntity<Result<Map<String, Object>>> adminRefreshToken(
-            @RequestHeader("X-Auth-Token") String authToken,
-            @PathVariable Long id) {
-        Token requester = tokenService.findByRawToken(authToken).orElse(null);
-        if (requester == null || !"ADMIN".equalsIgnoreCase(requester.getRole())) {
-            return ResponseEntity.status(403)
-                    .body(Result.error("Admin role required", 403));
-        }
-        try {
-            String newRawToken = tokenService.adminRefreshToken(id);
-            String email = tokenService.getTokenEmail(id);
-            String targetName = tokenService.listTokens().stream()
-                    .filter(m -> m.get("id").equals(id))
-                    .findFirst().map(m -> (String) m.get("name")).orElse("Unknown");
-            emailService.sendTokenRefresh(email, targetName, newRawToken);
-            Map<String, Object> data = new HashMap<>();
-            data.put("token", newRawToken);
-            data.put("id", id);
-            return ResponseEntity.ok(Result.success(data));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));
         }
