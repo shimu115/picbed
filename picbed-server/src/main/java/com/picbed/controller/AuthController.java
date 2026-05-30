@@ -1,6 +1,7 @@
 package com.picbed.controller;
 
 import com.picbed.dto.Result;
+import com.picbed.dto.SessionResponse;
 import com.picbed.entity.Session;
 import com.picbed.entity.Token;
 import com.picbed.service.SessionService;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.channels.SeekableByteChannel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -28,7 +30,7 @@ public class AuthController {
     private SessionService sessionService;
 
     @PostMapping("/api/auth/login")
-    public ResponseEntity<Result<Map<String, Object>>> login(
+    public ResponseEntity<Result<SessionResponse>> login(
             @RequestBody Map<String, String> body,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -68,12 +70,11 @@ public class AuthController {
         cookie.setAttribute("SameSite", "Lax");
         response.addCookie(cookie);
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", tokenEntity.getId());
-        data.put("name", tokenEntity.getName());
-        data.put("role", tokenEntity.getRole());
-        data.put("email", tokenEntity.getEmail());
-
+        SessionResponse data = new SessionResponse();
+        data.setId(tokenEntity.getId());
+        data.setName(tokenEntity.getName());
+        data.setRole(tokenEntity.getRole());
+        data.setEmail(tokenEntity.getEmail());
         log.info("User '{}' (tokenId={}) logged in, session={}", tokenEntity.getName(), tokenEntity.getId(), session.getSessionId());
         return ResponseEntity.ok(Result.success(data));
     }
@@ -103,7 +104,7 @@ public class AuthController {
     }
 
     @GetMapping("/api/auth/session")
-    public ResponseEntity<Result<Map<String, Object>>> getSession(
+    public ResponseEntity<Result<SessionResponse>> getSession(
             HttpServletRequest request) {
         Long tokenId = (Long) request.getAttribute("tokenId");
         String sessionId = (String) request.getAttribute("sessionId");
@@ -118,13 +119,12 @@ public class AuthController {
 
         String email = tokenService.getTokenEmail(tokenId);
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("valid", true);
-        data.put("id", tokenId);
-        data.put("name", name);
-        data.put("role", sessionOpt.get().getRole());
-        data.put("email", email);
-
+        SessionResponse data = new SessionResponse();
+        data.setId(tokenId);
+        data.setName(name);
+        data.setRole(sessionOpt.get().getRole());
+        data.setEmail(email);
+        data.setValid(true);
         return ResponseEntity.ok(Result.success(data));
     }
 }

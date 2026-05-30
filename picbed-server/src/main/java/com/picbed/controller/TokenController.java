@@ -224,9 +224,6 @@ public class TokenController {
         Long requesterTokenId = (Long) request.getAttribute("tokenId");
         try {
             TokenResponse result = tokenService.refreshToken(id, requesterTokenId);
-//            String targetEmail = (String) result.get("email");
-//            String targetName = (String) result.get("name");
-//            String rawToken = (String) result.get("token");
             emailService.sendTokenRefreshed(result.getEmail(), result.getName(), result.getToken());
             return ResponseEntity.ok(Result.success(result));
         } catch (IllegalArgumentException e) {

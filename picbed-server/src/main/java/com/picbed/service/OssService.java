@@ -3,6 +3,7 @@ package com.picbed.service;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.model.GeneratePresignedUrlRequest;
 import com.picbed.config.OssProperties;
+import com.picbed.dto.UploadSignatureResponse;
 import com.picbed.exception.OssOperationException;
 import com.picbed.util.OssUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class OssService {
     @Autowired
     private OssProperties ossProperties;
 
-    public Map<String, Object> generateUploadSignature(String filename, String contentType, String md5) {
+    public UploadSignatureResponse generateUploadSignature(String filename, String contentType, String md5) {
         if (!OssUtil.ImageType.isAllowedContentType(contentType)) {
             log.warn("Upload signature rejected: unsupported content type '{}' for '{}'", contentType, filename);
             throw new IllegalArgumentException(
@@ -47,12 +48,12 @@ public class OssService {
 
         log.info("Generated upload signature for '{}' -> ossKey={}", filename, ossKey);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("ossKey", ossKey);
-        result.put("uploadUrl", signedUrl.toString());
-        result.put("accessUrl", accessUrl);
-        result.put("expiresAt", expiration.toInstant().toString());
-        return result;
+        UploadSignatureResponse response = new UploadSignatureResponse();
+        response.setOssKey(ossKey);
+        response.setAccessUrl(accessUrl);
+        response.setUploadUrl(signedUrl.toString());
+        response.setExpiresAt(expiration.toInstant().toString());
+        return response;
     }
 
     public void deleteObject(String ossKey) {

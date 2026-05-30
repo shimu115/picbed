@@ -1,10 +1,6 @@
 package com.picbed.controller;
 
-import com.picbed.dto.BatchDeleteRequest;
-import com.picbed.dto.BatchPublishRequest;
-import com.picbed.dto.ImageDTO;
-import com.picbed.dto.ImageSaveRequest;
-import com.picbed.dto.Result;
+import com.picbed.dto.*;
 import com.picbed.entity.ImageInfo;
 import com.picbed.exception.ForbiddenException;
 import com.picbed.service.ImageService;
@@ -27,19 +23,19 @@ public class ImageController {
     private ImageService imageService;
 
     @GetMapping("/api/public/images")
-    public ResponseEntity<Result<Map<String, Object>>> listImages(
+    public ResponseEntity<Result<ImageResponse<ImageDTO>>> listImages(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "filename") String searchType) {
         Page<ImageDTO> result = imageService.listPublishedImages(page, size, search, searchType);
-        return ResponseEntity.ok(Result.success(Map.of(
-                "content", result.getContent(),
-                "totalElements", result.getTotalElements(),
-                "totalPages", result.getTotalPages(),
-                "number", result.getNumber(),
-                "size", result.getSize()
-        )));
+        return ResponseEntity.ok(Result.success(ImageResponse.<ImageDTO>builder()
+                .content(result.getContent())
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .number(result.getNumber())
+                .size(result.getSize())
+                .build()));
     }
 
     @GetMapping("/api/public/images/{id}")
@@ -48,7 +44,7 @@ public class ImageController {
     }
 
     @GetMapping("/api/admin/images")
-    public ResponseEntity<Result<Map<String, Object>>> listManagedImages(
+    public ResponseEntity<Result<ImageResponse<ImageDTO>>> listManagedImages(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) Boolean published,
@@ -58,13 +54,13 @@ public class ImageController {
         Long tokenId = (Long) request.getAttribute("tokenId");
         String tokenRole = (String) request.getAttribute("tokenRole");
         Page<ImageDTO> result = imageService.listImagesByOwner(page, size, tokenId, tokenRole, published, search, searchType);
-        return ResponseEntity.ok(Result.success(Map.of(
-                "content", result.getContent(),
-                "totalElements", result.getTotalElements(),
-                "totalPages", result.getTotalPages(),
-                "number", result.getNumber(),
-                "size", result.getSize()
-        )));
+        return ResponseEntity.ok(Result.success(ImageResponse.<ImageDTO>builder()
+                .content(result.getContent())
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .number(result.getNumber())
+                .size(result.getSize())
+                .build()));
     }
 
     @GetMapping("/api/admin/images/{id}")
@@ -105,7 +101,7 @@ public class ImageController {
 
     @DeleteMapping("/api/admin/images/{id}")
     public ResponseEntity<Result<Void>> deleteImage(@PathVariable Long id,
-                                                     HttpServletRequest request) {
+                                                    HttpServletRequest request) {
         checkOwnership(id, request);
         imageService.deleteImage(id);
         return ResponseEntity.ok(Result.success());
