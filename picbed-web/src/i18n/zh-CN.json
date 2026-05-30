@@ -63,6 +63,7 @@
     "ignore": "忽略",
     "disabled": "已禁用",
     "enable": "启用",
+    "operationSuccess": "操作成功",
     "disable": "禁用",
     "tokenDisabled": "Token 已禁用，请联系管理员",
     "tokenRevoked": "Token 已被吊销，请联系管理员重新生成",

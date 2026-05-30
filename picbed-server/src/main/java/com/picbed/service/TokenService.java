@@ -1,5 +1,6 @@
 package com.picbed.service;
 
+import com.picbed.dto.TokenResponse;
 import com.picbed.entity.Token;
 import com.picbed.repository.TokenRepository;
 import com.picbed.util.TokenUtil;
@@ -25,7 +26,7 @@ public class TokenService {
     private SessionService sessionService;
 
     @Transactional
-    public Map<String, Object> createToken(String name, String role, String email) {
+    public TokenResponse createToken(String name, String role, String email) {
         if (tokenRepository.existsByNameAndRevokedFalse(name)) {
             throw new IllegalArgumentException("Username '" + name + "' already exists");
         }
@@ -48,13 +49,20 @@ public class TokenService {
 
         log.info("Created {} token '{}' (id={})", resolvedRole, name, token.getId());
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("id", token.getId());
-        result.put("name", token.getName());
-        result.put("role", token.getRole());
-        result.put("email", token.getEmail());
-        result.put("token", rawToken);
-        result.put("createdAt", token.getCreatedAt());
+//        Map<String, Object> result = new HashMap<>();
+//        result.put("id", token.getId());
+//        result.put("name", token.getName());
+//        result.put("role", token.getRole());
+//        result.put("email", token.getEmail());
+//        result.put("token", rawToken);
+//        result.put("createdAt", token.getCreatedAt());
+        TokenResponse result = new TokenResponse();
+        result.setId(token.getId());
+        result.setName(token.getName());
+        result.setRole(token.getRole());
+        result.setEmail(token.getEmail());
+        result.setToken(rawToken);
+        result.setCreatedAt(token.getCreatedAt());
         return result;
     }
 
@@ -127,20 +135,31 @@ public class TokenService {
         }
         token.setIsActive(active);
         tokenRepository.save(token);
+        if (!active) {
+            sessionService.revokeSessionsByTokenId(id);
+        }
         log.info("Token '{}' (id={}) isActive={}", token.getName(), id, active);
     }
 
-    public List<Map<String, Object>> listTokens() {
+    public List<TokenResponse> listTokens() {
         return tokenRepository.findByRevokedFalse().stream().map(t -> {
-            Map<String, Object> m = new HashMap<>();
-            m.put("id", t.getId());
-            m.put("name", t.getName());
-            m.put("role", t.getRole());
-            m.put("email", t.getEmail());
-            m.put("isActive", t.getIsActive());
-            m.put("createdAt", t.getCreatedAt());
-            m.put("expiresAt", t.getExpiresAt());
-            return m;
+//            Map<String, Object> m = new HashMap<>();
+//            m.put("id", t.getId());
+//            m.put("name", t.getName());
+//            m.put("role", t.getRole());
+//            m.put("email", t.getEmail());
+//            m.put("isActive", t.getIsActive());
+//            m.put("createdAt", t.getCreatedAt());
+//            m.put("expiresAt", t.getExpiresAt());
+            TokenResponse response = new TokenResponse();
+            response.setId(t.getId());
+            response.setName(t.getName());
+            response.setRole(t.getRole());
+            response.setEmail(t.getEmail());
+            response.setIsActive(t.getIsActive());
+            response.setCreatedAt(t.getCreatedAt());
+            response.setExpiresAt(t.getExpiresAt());
+            return response;
         }).toList();
     }
 
@@ -188,7 +207,7 @@ public class TokenService {
     }
 
     @Transactional
-    public Map<String, Object> refreshToken(Long targetId, Long requesterTokenId) {
+    public TokenResponse refreshToken(Long targetId, Long requesterTokenId) {
         Token target = tokenRepository.findById(targetId)
                 .orElseThrow(() -> new IllegalArgumentException("Token not found: " + targetId));
         if (target.getRevoked()) {
@@ -214,12 +233,18 @@ public class TokenService {
 
         log.info("Refreshed token '{}' (id={})", target.getName(), targetId);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("id", target.getId());
-        result.put("name", target.getName());
-        result.put("role", target.getRole());
-        result.put("email", target.getEmail());
-        result.put("token", rawToken);
+//        Map<String, Object> result = new HashMap<>();
+//        result.put("id", target.getId());
+//        result.put("name", target.getName());
+//        result.put("role", target.getRole());
+//        result.put("email", target.getEmail());
+//        result.put("token", rawToken);
+        TokenResponse result = new TokenResponse();
+        result.setId(target.getId());
+        result.setName(target.getName());
+        result.setRole(target.getRole());
+        result.setEmail(target.getEmail());
+        result.setToken(rawToken);
         return result;
     }
 

@@ -64,7 +64,7 @@ async function handleToggleActive(token) {
   const newActive = !token.isActive
   try {
     await toggleTokenActive(token.id, newActive)
-    ElMessage.success(t('settings.saved'))
+    ElMessage.success(t('token.operationSuccess'))
     await loadTokens()
   } catch (e) {
     ElMessage.error(e.response?.data?.msg || t('error.serverError'))

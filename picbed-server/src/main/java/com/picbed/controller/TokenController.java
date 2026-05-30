@@ -1,12 +1,7 @@
 package com.picbed.controller;
 
 import com.picbed.config.SetupTokenManager;
-import com.picbed.dto.CodeRequest;
-import com.picbed.dto.Result;
-import com.picbed.dto.SendCodeRequest;
-import com.picbed.dto.TokenCreateRequest;
-import com.picbed.dto.TokenEmailUpdateRequest;
-import com.picbed.dto.VerifyCodeRequest;
+import com.picbed.dto.*;
 import com.picbed.entity.Token;
 import com.picbed.repository.EmailDomainRepository;
 import com.picbed.service.EmailService;
@@ -88,7 +83,7 @@ public class TokenController {
     }
 
     @PostMapping("/api/setup/token")
-    public ResponseEntity<Result<Map<String, Object>>> setupToken(
+    public ResponseEntity<Result<TokenResponse>> setupToken(
             @RequestHeader(value = "X-Setup-Token", required = false) String masterToken,
             @Valid @RequestBody TokenCreateRequest request) {
 
@@ -116,8 +111,8 @@ public class TokenController {
         }
 
         log.info("Creating initial admin token for '{}'", request.getName());
-        Map<String, Object> result = tokenService.createToken(request.getName(), "ADMIN", request.getEmail());
-        String rawToken = (String) result.get("token");
+        TokenResponse result = tokenService.createToken(request.getName(), "ADMIN", request.getEmail());
+        String rawToken = result.getToken();
 
         emailService.sendTokenCreated(request.getEmail(), request.getName(), rawToken);
 
@@ -125,13 +120,13 @@ public class TokenController {
     }
 
     @GetMapping("/api/admin/tokens/listTokens")
-    public ResponseEntity<Result<List<Map<String, Object>>>> listTokens(
+    public ResponseEntity<Result<List<TokenResponse>>> listTokens(
             HttpServletRequest request) {
         return ResponseEntity.ok(Result.success(tokenService.listTokens()));
     }
 
     @PostMapping("/api/admin/tokens/createTokens")
-    public ResponseEntity<Result<Map<String, Object>>> createToken(
+    public ResponseEntity<Result<TokenResponse>> createToken(
             HttpServletRequest request,
             @Valid @RequestBody TokenCreateRequest req) {
         String role = req.getRole() != null ? req.getRole() : "USER";
@@ -223,16 +218,16 @@ public class TokenController {
     }
 
     @PostMapping("/api/admin/tokens/{id}/refresh")
-    public ResponseEntity<Result<Map<String, Object>>> refreshToken(
+    public ResponseEntity<Result<TokenResponse>> refreshToken(
             HttpServletRequest request,
             @PathVariable Long id) {
         Long requesterTokenId = (Long) request.getAttribute("tokenId");
         try {
-            Map<String, Object> result = tokenService.refreshToken(id, requesterTokenId);
-            String targetEmail = (String) result.get("email");
-            String targetName = (String) result.get("name");
-            String rawToken = (String) result.get("token");
-            emailService.sendTokenRefreshed(targetEmail, targetName, rawToken);
+            TokenResponse result = tokenService.refreshToken(id, requesterTokenId);
+//            String targetEmail = (String) result.get("email");
+//            String targetName = (String) result.get("name");
+//            String rawToken = (String) result.get("token");
+            emailService.sendTokenRefreshed(result.getEmail(), result.getName(), result.getToken());
             return ResponseEntity.ok(Result.success(result));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Result.error(e.getMessage(), 400));
