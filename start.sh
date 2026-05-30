@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "Starting PicBed..."
 cd "$SCRIPT_DIR"
-docker-compose up -d
+docker compose up -d
 
 echo "PicBed is running!"
 echo "Frontend: http://localhost"
