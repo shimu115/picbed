@@ -49,13 +49,6 @@ public class TokenService {
 
         log.info("Created {} token '{}' (id={})", resolvedRole, name, token.getId());
 
-//        Map<String, Object> result = new HashMap<>();
-//        result.put("id", token.getId());
-//        result.put("name", token.getName());
-//        result.put("role", token.getRole());
-//        result.put("email", token.getEmail());
-//        result.put("token", rawToken);
-//        result.put("createdAt", token.getCreatedAt());
         TokenResponse result = new TokenResponse();
         result.setId(token.getId());
         result.setName(token.getName());
@@ -143,14 +136,6 @@ public class TokenService {
 
     public List<TokenResponse> listTokens() {
         return tokenRepository.findByRevokedFalse().stream().map(t -> {
-//            Map<String, Object> m = new HashMap<>();
-//            m.put("id", t.getId());
-//            m.put("name", t.getName());
-//            m.put("role", t.getRole());
-//            m.put("email", t.getEmail());
-//            m.put("isActive", t.getIsActive());
-//            m.put("createdAt", t.getCreatedAt());
-//            m.put("expiresAt", t.getExpiresAt());
             TokenResponse response = new TokenResponse();
             response.setId(t.getId());
             response.setName(t.getName());
@@ -233,12 +218,6 @@ public class TokenService {
 
         log.info("Refreshed token '{}' (id={})", target.getName(), targetId);
 
-//        Map<String, Object> result = new HashMap<>();
-//        result.put("id", target.getId());
-//        result.put("name", target.getName());
-//        result.put("role", target.getRole());
-//        result.put("email", target.getEmail());
-//        result.put("token", rawToken);
         TokenResponse result = new TokenResponse();
         result.setId(target.getId());
         result.setName(target.getName());
