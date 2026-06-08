@@ -9,6 +9,10 @@ services:
       - ./data:/app/data
     env_file:
       - .env
+    networks:
+      picbed:
+        aliases:
+          - "picbed-server"
 
   web:
     build: ./picbed-web
@@ -18,3 +22,10 @@ services:
       - "5173:5173"
     depends_on:
       - server
+    networks:
+      picbed:
+        aliases:
+          - "picbed-web"
+networks:
+  picbed:
+    external: true
