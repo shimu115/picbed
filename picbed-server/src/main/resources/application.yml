@@ -27,12 +27,9 @@ spring:
       max-file-size: 50MB
   mail:
     default-encoding: UTF-8
-    #    host: smtp.163.com  # gmail host: smtp.gmail.com    163 host: smtp.163.com
     host: ${SMTP_HOST:}  # gmail host: smtp.gmail.com    163 host: smtp.163.com
     username: ${SMTP_USERNAME:}
-    #    username: 13871292203@163.com
-    password: ${SMTP_PASSWORD:}  # gmail security password: klqs kdpg inya pxih
-    #    password: SJQbsX7NLDGLy3nA  # gmail security password: klqs kdpg inya pxih
+    password: ${SMTP_PASSWORD:}
     port: ${SMTP_PORT:465}   # gmail: 如果使用 SSL，则为 465, 未使用 SSL则为 587   163: 25
     protocol: smtps
     properties:
@@ -40,25 +37,12 @@ spring:
       mail.smtp.starttls.enable: true  # 启用 STARTTLS
       mail.smtp.starttls.required: true
       mail.smtp.ssl.trust: ${SMTP_HOST:}
-      #      mail.smtp.ssl.trust: smtp.163.com
       mail.smtp.ssl.protocols: TLSv1.2
       mail.debug: true
       mail.smtp.connectiontimeout: 10000
       mail.smtp.timeout: 10000
       mail.smtp.writetimeout: 10000
       mail.smtp.ssl.enable: true
-#  mail:
-#    host: ${SMTP_HOST:}
-#    port: ${SMTP_PORT:587}
-#    username: ${SMTP_USERNAME:}
-#    password: ${SMTP_PASSWORD:}
-#    properties:
-#      mail:
-#        smtp:
-#          auth: true
-#          starttls:
-#            enable: true
-#            required: true
   main:
     allow-circular-references: true
 
